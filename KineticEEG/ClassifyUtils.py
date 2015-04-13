@@ -11,3 +11,11 @@ def list_d(inst1, inst2, leng):
     for i in range(leng):
         d_list.append(int(abs(inst1[i]-inst2[i])))
     return d_list
+def load_trainingdata(file):
+    f=open(file, "r")
+    trainingdat=list()
+    for i in f.readlines():
+        trainingdat.append(i)
+    return trainingdat
+
+        
