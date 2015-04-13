@@ -1,7 +1,7 @@
 import ClassifyUtils
 """What we will get is a list/array containing the computed spectrum information.
 The list will be like this:
->>>data=[delta, theta, alpha, beta]
+>>>data=[delta, theta, alpha, beta, "class"]
 trainingdata is a list of lists
 """
 
@@ -16,5 +16,6 @@ class SensorClassifier:
         self.theta_val=self.sensordata[1]
         self.alpha_val=self.sensordata[2]
         self.beta_val=self.sensordata[3]
+        
         
         
