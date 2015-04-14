@@ -25,7 +25,7 @@ def load_trainingdata(file):
         if sensor in trainingdat.keys():
             trainingdat[sensor].append(i)
         else:
-            trainingdat.update({sensor:[[i]]})
+            trainingdat.update({sensor:[i]})
     f.close()
     return trainingdat
 
