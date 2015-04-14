@@ -4,7 +4,7 @@ import math
 def euclideandistance(inst1, inst2, leng):
     d=0
     for i in range(leng):
-        d+=pow((inst1[i]-inst2[i]),2)
+        d+=pow((inst1[i]-float(inst2[i])),2)
     return math.sqrt(d)
 def list_d(inst1, inst2, leng):
     d_list=list()
