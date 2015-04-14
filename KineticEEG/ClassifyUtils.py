@@ -20,10 +20,13 @@ def load_trainingdata(file):
     f=open(file, "r")
     trainingdat=dict()
     for i in f.readlines():
-        i=i.split()
-        senor=i.pop(0)
-        trainingdat[sensor].append(i)
-        
+        i=i.split(",")
+        sensor=i.pop(0)
+        if sensor in trainingdat.keys():
+            trainingdat[sensor].append(i)
+        else:
+            trainingdat.update({sensor:[[i]]})
+    f.close()
     return trainingdat
 
         
