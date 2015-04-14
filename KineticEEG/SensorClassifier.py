@@ -8,7 +8,7 @@ class SensorClassifier:
     """This classifies the sensor's information in a binary form"""
     def __init__(self,sensor,sensordata, trainingdata):
         self. sensordatalegnth=len(sensordata)
-        self.sensordata=sensordata
+        self.sensordata=sensordata[sensor]
         self.trainingdata=trainingdata
         self.delta_val=self.sensordata[0]
         self.theta_val=self.sensordata[1]
@@ -27,6 +27,12 @@ class SensorClassifier:
     def get_responses(self):
         self.votes=dict()
         for i in range(len(self.neighbors)):
+            vote=self.neighbors[i][-1]
+            if vote in self.votes.keys():
+                self.votes[vote]+=1
+            else:
+                self.votes.update({vote:1})
+                
             
         
     
