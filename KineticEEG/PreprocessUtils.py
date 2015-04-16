@@ -25,6 +25,11 @@ def butter_highpass_filter(data, cutoff, samplingfreq, order):
     b,a = scipy.signal.butter(order, norm_cutoff,'highpass')
     filtereddat=scipy.signal.lfilter(b,a,data)
     return filtereddat
+##def get_alpha_beta_pow(data):
+##    fftedddat=fft.fft(data)
+##    maggedfft=list()
+##    for i in 
+    
 def bin_power(X,Band,Fs):
 	C = fft.fft(X)
 	C = abs(C)
