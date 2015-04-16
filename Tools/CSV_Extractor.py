@@ -1,4 +1,5 @@
 import csv
+"""This is a tool to extract sensor reading data from the CSVs the the Emotiv Testbench Software provides"""
 
 
 class CSVExtractor:
