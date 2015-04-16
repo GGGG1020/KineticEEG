@@ -11,9 +11,9 @@ class CSVExtractor:
     def get_data_from_sensor(self, sensor, length):
         indx=self.sensor2column[sensor]
         list_of_vals=list()
-        for i in range(length):
+        for i in range(length+1):
             curr_line=next(self.csv_read)
-            if curr_line[0][0]="t":
+            if curr_line[0][0]=="t":
                 pass
             else:
                 list_of_vals.append(float(curr_line[indx])
