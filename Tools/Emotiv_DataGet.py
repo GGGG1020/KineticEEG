@@ -35,19 +35,20 @@ class EmotivDataGetter:
                         nSam=self.nSamplesTaken[0]
                         arr=(ctypes.c_double*self.nSamplesTaken[0])()
                         ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))
-                        data=array("d")
-                        for sampleIdx in range(self.nSamplesTaken[0]): 
-                            for i in range(15): 
-                                EdkDLL.EE_DataGet(self.hData,[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16][i],byref(arr), nSam)
-                                self.fin_data[i].append(arr[sampleIdx][i])
+                        data=numpy.array("d")
+                        for sampleIdx in range(self.nSamplesTaken[0]):
+                            for i in range(14): 
+                                EdkDLL.EE_DataGet(self.hData,[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16][i],ctypes.byref(arr), nSam)
+                                self.fin_data[i].append(arr[sampleIdx])
                             if len(self.fin_data[0])>=1024:
+                                #for p in self.fin_data[3]:
+                                    #print(p)
                                 self.data_processor=Preprocessers.DataProcessor(self.fin_data)
-                                self.data_processor.do_highpass()
-                                self.data_processor.do_hanning_window()
+                                self.data_processor.do_high_pass()
+                                self.data_processor.do_hanning_wndow()
                                 self.data_processor.do_bin_power()
-                                print(self.data_processor.data_dict)
-                                for c in self.fin_data:
-                                    c.pop(0)
+                                print(self.data_processor.data_dict["FC5"][1][0])
+                                
 if __name__=='__main__':
     g=EmotivDataGetter()
     g.mainloop()
