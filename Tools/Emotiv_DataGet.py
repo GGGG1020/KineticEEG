@@ -5,6 +5,7 @@ sys.path.append("C:/Users/Gaurav/My Documents/GitHub/KineticEEG/KineticEEG")
 import Preprocessers
 import os
 import numpy
+import matplotlib.pyplot as pplot
 os.chdir("C:/Program Files (x86)/Emotiv Education Edition SDK v2.0.0.20/dll/32 bit")
 EdkDLL=ctypes.cdll.LoadLibrary("C:/Program Files (x86)/Emotiv Education Edition SDK v2.0.0.20/dll/32 bit/edk.dll")
 class EmotivDataGetter:
@@ -16,10 +17,14 @@ class EmotivDataGetter:
         self.nSamples=int(0)
         self.nSamplesTaken=ctypes.pointer(ctypes.c_uint(self.nSamples))
         self.fin_data=list([[],[],[],[],[],[],[],[],[],[],[],[],[],[]])
+        fig = pplot.figure()
+        win = fig.canvas.manager.window
+        pplot.show()
     def mainloop(self):
         EdkDLL.EE_EngineConnect(b"Emotiv Systems-5")
         self.hData=EdkDLL.EE_DataCreate()
         EdkDLL.EE_DataSetBufferSizeInSec(ctypes.c_float(1.0))
+        rects = plt.bar(range(N), x,  align = 'center')
         while(1):
             state=EdkDLL.EE_EngineGetNextEvent(self.eEvent)
             if state==0:
@@ -47,7 +52,11 @@ class EmotivDataGetter:
                                 self.data_processor.do_high_pass()
                                 self.data_processor.do_hanning_wndow()
                                 self.data_processor.do_bin_power()
-                                print(self.data_processor.data_dict["FC5"][1][0])
+                                rect.set_height(int(self.data_processor.data_dict["FC5"][1][0]))
+                            self.fig.canvas.draw()
+                               
+                                
+                                
                                 
 if __name__=='__main__':
     g=EmotivDataGetter()
