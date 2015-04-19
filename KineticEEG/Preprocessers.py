@@ -18,7 +18,7 @@ class DataProcessor:
         self.data_dict={"AF3":arrays[0], "F7":arrays[1],"F3":arrays[2],"FC5":arrays[3],"T7":arrays[4],"P7":arrays[5],"O1":arrays[6],"O2":arrays[7],"P8":arrays[8],"T8":arrays[9],"FC6":arrays[10],"F4":arrays[11],"AF4":arrays[12]}
     def do_high_pass(self):
         for item in self.data_dict.keys():
-            self.data_dict[item]=PreprocessUtils.butter_highpass_filter(self.data_dict[item])
+            self.data_dict[item]=PreprocessUtils.butter_highpass_filter(self.data_dict[item],0.16,128,5)
     def do_hanning_wndow(self):
         for item in self.data_dict.keys():
             self.data_dict[item]=PreprocessUtils.apply_hamming_window(self.data_dict[item], len(self.data_dict[item]))
