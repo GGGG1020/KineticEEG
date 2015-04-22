@@ -21,7 +21,7 @@ class DataProcessor:
             self.data_dict[item]=PreprocessUtils.butter_highpass_filter(self.data_dict[item],0.16,128,5)
     def do_hanning_wndow(self):
         for item in self.data_dict.keys():
-            self.data_dict[item]=PreprocessUtils.apply_hamming_window(self.data_dict[item], len(self.data_dict[item]))
+            self.data_dict[item]=PreprocessUtils.do_basic_window(self.data_dict[item])
     def do_bin_power(self):
         for item in self.data_dict.keys():
             self.data_dict[item]=PreprocessUtils.bin_power(self.data_dict[item], [1,4,7,13,30], 128)
