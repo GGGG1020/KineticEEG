@@ -28,6 +28,7 @@ def animated_barplot(file):
         chunk1+=1
         fig.canvas.draw()
 file=sys.argv[1]
+print(sys.argv[1])
 fig = plt.figure()
 plt.xlim(0,9)
 plt.ylim(0,0.2)
