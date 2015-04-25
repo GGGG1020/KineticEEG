@@ -1,7 +1,14 @@
 import SensorClassifier
 import ClassifyUtils
 class TotalClassifier:
-    """This classifies ALL of the data"""
+    """This classifies ALL of the data
+    Specifications for TotalClassifier:
+    _____________________________
+
+    (1)The dict of data given shall be a dict of the following format
+    data={"AF3":[delta, theta, alpha, beta], FC5:[delta, theta, alpha, beta], ect.....}
+    (2)A threshold is recommended to prevent slowness
+    (3)......"""
     def __init__(self):
         self.sensorclassifierlist=list()
         self.last_state=str("Nuetral")
