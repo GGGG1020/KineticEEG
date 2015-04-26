@@ -4,7 +4,6 @@ class TotalClassifier:
     """This classifies ALL of the data
     Specifications for TotalClassifier:
     _____________________________
-
     (1)The dict of data given shall be a dict of the following format
     data={"AF3":[delta, theta, alpha, beta], FC5:[delta, theta, alpha, beta], ect.....}
     (2)A threshold is recommended to prevent slowness
@@ -36,5 +35,7 @@ class TotalClassifier:
         self.curr_state=self.vote_counts[max(self.vote_counts.keys())]
     def update_new_data(self, new_data):
         self.data=new_data
-        
+    def threshold(self):
+        for r in self.data.items():
+            for 
 
