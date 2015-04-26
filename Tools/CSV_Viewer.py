@@ -1,5 +1,5 @@
 import matplotlib
-import os
+import os.path
 matplotlib.use('TKAgg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,7 +45,7 @@ def animated_barplot(file,step):
         chunk1+=step
         fig.canvas.draw()
 file=sys.argv[1]
-if not os.exists(file):
+if not os.path.exists(file):
     print("""CSV_Viewer
 Written by Gaurav Ghosal as a tool for KineticEEG
 ______________________________
@@ -63,6 +63,7 @@ step is the number of elapsed samples between ffts()
 ymin is the minimum y value on the graph
 
 ymax is the maximum y value on the graph""")
+    exit()
 step=int(sys.argv[2])
 ymin=int(sys.argv[3])
 ymax=int(sys.argv[4])
