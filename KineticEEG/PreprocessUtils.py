@@ -32,16 +32,21 @@ def get_alpha_beta_pow(data):
     
     
 def bin_power(X,Band,Fs):
-	C = fft.fft(X)
-	C = abs(C)
-	#numpy.square(C)
-	Power =numpy.zeros(len(Band)-1);
-	for Freq_Index in range(0,len(Band)-1):
-		Freq = float(Band[Freq_Index])										
-		Next_Freq = float(Band[Freq_Index+1])
-		Power[Freq_Index] = sum(C[numpy.floor(Freq/Fs*len(X)):numpy.floor(Next_Freq/Fs*len(X))])
-	Power_Ratio = Power/sum(Power)
-	return Power, Power_Ratio	
+    C = fft.fft(X)
+    #C = abs(C)
+    newc=list()
+    for i in C:
+        newc.append(i*i.conjugate())
+    C=numpy.array(newc)
     
+    #numpy.square(C)
+    Power =numpy.zeros(len(Band)-1);
+    for Freq_Index in range(0,len(Band)-1):
+            Freq = float(Band[Freq_Index])										
+            Next_Freq = float(Band[Freq_Index+1])
+            Power[Freq_Index] = sum(C[numpy.floor(Freq/Fs*len(X)):numpy.floor(Next_Freq/Fs*len(X))])
+    Power_Ratio = Power/sum(Power)
+    return Power, Power_Ratio	
+
 
 	

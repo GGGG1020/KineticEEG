@@ -12,11 +12,11 @@ import PreprocessUtils
 def animated_barplot(file):
     # http://www.scipy.org/Cookbook/Matplotlib/Animations
     a=CSV_Extractor.CSVExtractor(file)
-    b=a.get_data_from_sensor("FC5", 2048)
+    b=a.get_data_from_sensor("FC5", 8192)
     chunk0=0
     chunk1=1024
     rects = plt.bar(range(1), 0,  align = 'center')
-    for i in range(1024):
+    for i in range(4096):
         dat=b[chunk0:chunk1]
         r=PreprocessUtils.butter_highpass_filter(dat,0.16,128,5)
         c=PreprocessUtils.basic_window(r)
@@ -31,7 +31,7 @@ file=sys.argv[1]
 print(sys.argv[1])
 fig = plt.figure()
 plt.xlim(0,9)
-plt.ylim(0,0.2)
+plt.ylim(0, 2)
 win = fig.canvas.manager.window
 plt.ion()
 win.after(100, lambda:animated_barplot(file))
