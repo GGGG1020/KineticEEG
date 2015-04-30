@@ -33,6 +33,10 @@ class TotalClassifier:
             self.vote_counts[k]=self.allvotes.count(k)
         self.vote_counts=dict((value, key) for key, value in self.vote_counts.iteritems())
         self.curr_state=self.vote_counts[max(self.vote_counts.keys())]
+        if not self.curr_state=="Nuetral" and self.last_state=="Nuetral":
+            return "Nuetral"
+            self.last_state==self.curr_state
+        if self.
     def update_new_data(self, new_data):
         self.data=new_data
     def threshold(self):
