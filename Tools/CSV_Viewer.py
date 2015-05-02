@@ -26,22 +26,22 @@ step is the number of elapsed samples between ffts()
 ymin is the minimum y value on the graph
 
 ymax is the maximum y value on the graph"""
-def animated_barplot(file,step,how_muc):
+def animated_barplot(file,step,how_muc,size):
     # http://www.scipy.org/Cookbook/Matplotlib/Animations
     a=CSV_Extractor.CSVExtractor(file)
     b=a.get_data_from_sensor("FC5", how_much)
     chunk0=0
-    chunk1=1024
+    chunk1=size
     rects = plt.bar(range(1), 0,  align = 'center')
     print(len(b)/128)
     for i in range(int(len(b)/step)):
         dat=b[chunk0:chunk1]
         r=PreprocessUtils.butter_highpass_filter(dat,0.16,128,5)
         c=PreprocessUtils.basic_window(r)
-        print((len(c),i))
+        #print((len(c),i))
         er=PreprocessUtils.bin_power(c, [1,4,7,13,30], 128)
         for rect in rects:
-            #print(er[1][0])
+            print(er[1][0])
             rect.set_height(er[1][0])
         chunk0+=step
         chunk1+=step
@@ -67,19 +67,22 @@ ymin is the minimum y value on the graph
 ymax is the maximum y value on the graph
 
 
-tofetch is how much data to get""")
+tofetch is how much data to get
+
+size is size of fft""")
     exit()
 step=int(sys.argv[2])
 ymin=int(sys.argv[3])
 ymax=int(sys.argv[4])
 how_much=int(sys.argv[5])
+size=int(sys.argv[6])
 print(sys.argv[1])
 fig = plt.figure()
 plt.xlim(0,9)
 plt.ylim(ymin, ymax)
 win = fig.canvas.manager.window
 plt.ion()
-win.after(100, lambda:animated_barplot(file,step,how_much))
+win.after(100, lambda:animated_barplot(file,step,how_much,size))
 plt.show()
 
 
