@@ -18,28 +18,30 @@ class TotalClassifier:
         self.curr_state=str()
     def classify(self):
         self.sensorclassifierlist.clear()
+        self.vote_counts1=dict()
+        self.vote_counts=dict()
+        self.allvotes=list()
         for i in self.data.keys():
-            self.sensorclassifierlist.append(SensorClassifier(i, self.data[i], self.trainingdata))
+            self.sensorclassifierlist.append(SensorClassifier.SensorClassifier(i, self.data[i], self.trainingdata))
         for i in self.sensorclassifierlist:
-            i.getneighbors()
-            r=i.get_responses()
+            i.get_neighbors(1)
+            i.get_responses()
+            r=i.votes
             for b in r.keys():
                 val=r[b]
                 del r[b]
                 r.update({val:b})
             vote=r[max(r.keys())]
             self.allvotes.append(vote)
-        for k in ["Kick", "Arm", "Nuetral"]:
+        for k in ["kick\n", "arm\n", "nuetral\n"]:
             self.vote_counts[k]=self.allvotes.count(k)
-        self.vote_counts=dict((value, key) for key, value in self.vote_counts.iteritems())
-        self.curr_state=self.vote_counts[max(self.vote_counts.keys())]
-        if not self.curr_state=="Nuetral" and self.last_state=="Nuetral":
-            return "Nuetral"
-            self.last_state==self.curr_state
-        if self.
+        self.vote_counts1=dict((value, key) for key, value in iter(self.vote_counts.items()))
+        self.curr_state=self.vote_counts1[max(self.vote_counts1.keys())]
+        #if not self.curr_state=="Nuetral" and self.last_state=="Nuetral":
+            #return "Nuetral"
+            #self.last_state==self.curr_state
+        #if# self.
+        return self.curr_state
     def update_new_data(self, new_data):
         self.data=new_data
-    def threshold(self):
-        for r in self.data.items():
-            for 
 
