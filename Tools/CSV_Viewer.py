@@ -33,6 +33,9 @@ def animated_barplot(file,step,how_muc,size):
     chunk0=0
     chunk1=size
     rects = plt.bar(range(1), 0,  align = 'center')
+    rect1=plt.bar(2, 0,  align = 'center')
+    rect2=plt.bar(3, 0,  align = 'center')
+    rect3=plt.bar(4, 0,  align = 'center')
     print(len(b)/128)
     for i in range(int(len(b)/step)):
         dat=b[chunk0:chunk1]
@@ -43,6 +46,12 @@ def animated_barplot(file,step,how_muc,size):
         for rect in rects:
             print(er[1][0])
             rect.set_height(er[1][0])
+        for rect in rect1:
+            rect.set_height(er[1][1])
+        for rect in rect2:
+            rect.set_height(er[1][2])
+        for rect in rect3:
+            rect.set_height(er[1][3])
         chunk0+=step
         chunk1+=step
         fig.canvas.draw()
