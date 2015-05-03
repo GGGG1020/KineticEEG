@@ -26,12 +26,12 @@ class TotalClassifier:
         for i in self.sensorclassifierlist:
             i.get_neighbors(1)
             i.get_responses()
-            r=i.votes
-            for b in r.keys():
-                val=r[b]
-                del r[b]
-                r.update({val:b})
-            vote=r[max(r.keys())]
+            self.r=i.votes
+            for b in self.r.keys():
+                val=self.r[b]
+                del self.r[b]
+                self.r.update({val:b})
+            vote=self.r[max(self.r.keys())]
             self.allvotes.append(vote)
         for k in ["kick\n", "arm\n", "nuetral\n"]:
             self.vote_counts[k]=self.allvotes.count(k)
@@ -44,4 +44,4 @@ class TotalClassifier:
         return self.curr_state
     def update_new_data(self, new_data):
         self.data=new_data
-
+        
