@@ -26,6 +26,7 @@ def butter_highpass_filter(data, cutoff, samplingfreq, order):
     filtereddat=scipy.signal.lfilter(b,a,data)
     return filtereddat
 def get_alpha_beta_pow(data):
+	"""Do NOT use:This is experimental!"""
     fftedddat=fft.fft(data)
     maggedfft=abs(fftedddat)
     powedfft=numpy.square(maggedfft)
