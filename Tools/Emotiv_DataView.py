@@ -9,7 +9,7 @@ import time
 import matplotlib.pyplot as pplot
 os.chdir("C:/Program Files (x86)/Emotiv Education Edition SDK v2.0.0.20/dll/32 bit")
 EdkDLL=ctypes.cdll.LoadLibrary("C:/Program Files (x86)/Emotiv Education Edition SDK v2.0.0.20/dll/32 bit/edk.dll")
-class EmotivDataGetter:
+class EmotivDataViewer:
     def __init__(self):
         self.eEvent=EdkDLL.EE_EmoEngineEventCreate()
         self.eState=EdkDLL.EE_EmoStateCreate()
@@ -69,7 +69,7 @@ class EmotivDataGetter:
                                 
                                 
 if __name__=='__main__':
-    g=EmotivDataGetter()
+    g=EmotivDataViewer()
     g.mainloop()
    
   
