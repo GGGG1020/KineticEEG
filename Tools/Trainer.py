@@ -1,9 +1,12 @@
 """Training Data Getter"""
 import tkinter
 import tkinter.ttk as tk
-
+class TrainingCore:
+    SENSORS_OF_INTEREST=["FC5","F3","F4","FC6"]
+    def __init__(self):
+        pass
 class TrainerApp(tkinter.Tk):
-    def __init__(self, parent):
+    def __init__(self, parent, TrainingCore):
         tkinter.Tk.__init__(self, parent)
         self.parent=parent
         self.minsize(width=400, height=400)
@@ -19,6 +22,7 @@ class TrainerApp(tkinter.Tk):
         self.train_nuetralbtn=tk.Button(self, text="Train Nuetral")
         self.train_nuetralbtn.place(x=160, y=130)  
 if __name__=='__main__':
-    app=TrainerApp(None)
+    core=TrainingCore()
+    app=TrainerApp(None,core)
     app.title("Trainer")
     app.mainloop()
