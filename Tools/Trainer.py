@@ -7,11 +7,14 @@ import tkinter.ttk as tk
 import EmotivDataGetter
 class TrainingCore:
     SENSORS_OF_INTEREST=["FC5","F3","F4","FC6"]
+    
     def __init__(self):
         """It will get the training data like so;
         >>>max(window of ffted values)"""
         self.datagetter=EmotivDataGetter.EmotivDataGetter()
-        self.dataprocessor=Preprocesser.DataProcessor()
+        self.dataprocessor=Preprocessers.DataProcessor()
+    def train_kick():
+        ser
         
 class TrainerApp(tkinter.Tk):
     def __init__(self, parent, TrainingCore):
