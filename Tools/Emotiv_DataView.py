@@ -32,7 +32,6 @@ class EmotivDataViewer:
         EdkDLL.EE_EngineConnect(b"Emotiv Systems-5")
         self.hData=EdkDLL.EE_DataCreate()
         EdkDLL.EE_DataSetBufferSizeInSec(ctypes.c_float(1.0))
-       
         while(1):
             state=EdkDLL.EE_EngineGetNextEvent(self.eEvent)
             if state==0:
@@ -66,11 +65,7 @@ class EmotivDataViewer:
                                 #self.fin_data.pop(0)
                                 for rect in self.rects:
                                     rect.set_height(h)
-                                self.fig.canvas.draw()
-                                    
-                                
-                                
-                                
+                                self.fig.canvas.draw()                                
 if __name__=='__main__':
     g=EmotivDataViewer()
     g.mainloop()
