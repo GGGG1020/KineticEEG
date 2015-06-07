@@ -17,6 +17,8 @@ class EmotivDataGetter:
         self.nSamples=int(0)
         self.nSamplesTaken=ctypes.pointer(ctypes.c_uint(self.nSamples))
         self.fin_data=list([[],[],[],[],[],[],[],[],[],[],[],[],[],[]])
+        self.sens=['AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4']
+        self.nice_dict=dict()
     def __getdata(self):
         EdkDLL.EE_EngineConnect(b"Emotiv Systems-5")
         self.hData=EdkDLL.EE_DataCreate()
@@ -38,4 +40,22 @@ class EmotivDataGetter:
                         arr=(ctypes.c_double*self.nSamplesTaken[0])()
                         ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))
                         data=numpy.array("d")
+                        libEDK.EE_DataGet(hData,targetChannelList[i],byref(arr), nSam)
+                        for sm in range(self.nSamplesTaken[0]):
+                            for i in range(14): 
+                                EdkDLL.EE_DataGet(self.hData,[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16][i],ctypes.byref(arr), nSam)
+                                self.fin_data[i].append(arr[sampleIdx])
+                        #Now time to assemble it nicely
+                            for i in range(self.sens):
+                                self.nice_dict.update({self.sens[i]:self.fin_data[i]})
+                            return self.nice_dict
+                        
+                                
+                                
+                                
+                            
+                                
+                                
+
+                            
        
