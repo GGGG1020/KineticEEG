@@ -23,7 +23,7 @@ class EmotivDataGetter:
         self.all_dicts=list()
         self.processor=Preprocessers.Preprocessor()
         self.bined
-    def getwindowoffftdata(self,leng,getleng):
+    def getwindowoffftdata(self,leng,getleng, step=16):
         EdkDLL.EE_EngineConnect(b"Emotiv Systems-5")
         self.hData=EdkDLL.EE_DataCreate()
         EdkDLL.EE_DataSetBufferSizeInSec(ctypes.c_float(1.0))
@@ -55,7 +55,10 @@ class EmotivDataGetter:
                             else:
                                 for sens in self.nice_dict:
                                     self.nice_dict[sens].append(self.fin_data[self.sens.index(sens)])
-                            if len(self.fin_data[0])==1028:
+                            
+                            if len(self.fin_data[0])==leng+16:
+                                for g in self.nice_dict:
+                                    del g[0:step]
                                 self.data_processor=Preprocessers.DataProcessor(self.nice_dict)
                                 self.data_processor.do_high_pass()
                                 self.data_processor.do_hanning_wndow()
