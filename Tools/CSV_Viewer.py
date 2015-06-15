@@ -43,6 +43,7 @@ def animated_barplot(file,step,how_muc,size):
         c=PreprocessUtils.basic_window(r)
         #print((len(c),i))
         er=PreprocessUtils.bin_power(c, [1,4,7,13,30], 128)
+        j.append(er[1][0])
         for rect in rects:
             print(er[1][0])
             rect.set_height(er[1][0])
@@ -75,7 +76,6 @@ ymin is the minimum y value on the graph
 
 ymax is the maximum y value on the graph
 
-
 tofetch is how much data to get
 
 size is size of fft""")
@@ -91,6 +91,7 @@ plt.xlim(0,9)
 plt.ylim(ymin, ymax)
 win = fig.canvas.manager.window
 plt.ion()
+j=list()
 win.after(100, lambda:animated_barplot(file,step,how_much,size))
 plt.show()
 
