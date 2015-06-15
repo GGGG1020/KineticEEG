@@ -6,6 +6,7 @@ import tkinter
 import tkinter.ttk as tk
 import EmotivDataGetter
 import time
+import csv
 class TrainingCore:
     SENSORS_OF_INTEREST=["FC5","F3","F4","FC6"]
     def __init__(self):
@@ -13,6 +14,7 @@ class TrainingCore:
         >>>max(window of ffted values)"""
         self.datagetter=EmotivDataGetter.EmotivDataGetter()
         self.interestingdata=dict()
+        self.csvwrite
     def wait_window(self):
         """Wait for the arrival of the data"""
         window=self.datagetter.getwindowoffftdata(5)
@@ -24,6 +26,7 @@ class TrainingCore:
             maxa=max(c)
             del self.interestingdata[c]
             self.interestingdata[c]=maxa
+        for z in self.interestingdata:
             
 class TrainerApp(tkinter.Tk):
     def __init__(self, parent, TrainingCore):
