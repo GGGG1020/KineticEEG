@@ -56,6 +56,22 @@ def animated_barplot(file,step,how_muc,size):
         chunk0+=step
         chunk1+=step
         fig.canvas.draw()
+def rollingbarplot(file, step, size):
+    a=CSV_Extractor.CSVExtractor(file)
+    proc=Processers.DataProcessor()
+    temproc=Processers.DataProcessor()
+    tree={'F3': [], 'FC5': [], 'T7': [], 'F7': [], 'P7': [], 'P8': [], 'AF4': [], 'O2': [], 'O1': [], 'T8': [], 'AF3': [], 'FC6': [], 'F4': [], 'F8': []}
+    step=False
+    while True:
+        for i in a.sensor2column:
+            fed=a.get256more(i)
+            temproc.update_data(fed)
+            temproc.do_highpass()
+            fed=temproc.data_dict
+            tree[i]+=fed
+        if len(tree[0])==size:
+            
+
 file=sys.argv[1]
 if not os.path.exists(file):
     print("""CSV_Viewer

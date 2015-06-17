@@ -22,10 +22,10 @@ class CSVExtractor:
 ##            else:
 ##                list_of_vals.append(float(curr_line[indx]))
 ##        return list_of_vals
-    def get256more(self,sensor):
+    def get128more(self,sensor):
         indx=self.sensor2column[sensor]
         listylist=list()
-        for i in range(256):
+        for i in range(128):
             listylist.append(float(self.large_list[i][indx]))
             del self.large_list[i][indx]
         return listylist
