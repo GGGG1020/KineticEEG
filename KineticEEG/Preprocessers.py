@@ -10,6 +10,7 @@ The array for the each contains the uV data."""
 class DataProcessor:
     """This does all the data processing in it's stages:
     High Pass Filter(0.16Hz.)->Windowing Function->FFT->Convert to Power for Bands"""
+    sensors=['AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4']
     def __init__(self):
         self.data_dict=dict()
     def do_high_pass(self):
