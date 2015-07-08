@@ -37,7 +37,7 @@ class CSVExtractor:
         indx=self.sensor2column[sensor]
         listylist=list()
         for i in range(128):
-            listylist.append(self.nicethingy[sensor][0])
+            listylist.append(float(self.nicethingy[sensor][0]))
             del self.nicethingy[sensor][0]
         return listylist 
     def get16more(self, sensor):

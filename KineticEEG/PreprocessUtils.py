@@ -29,14 +29,29 @@ def get_alpha_beta_pow(data):
     fftedddat=fft.fft(data)
     maggedfft=abs(fftedddat)
     powedfft=numpy.square(maggedfft)
-    
+    C=numpy.array(magggedftt)
+    for indx in range(len(Band)-1):
+        Freq=float(Band[Freq_Index])
+        
+def highpass(signal):
+    iir_tc=0.94 
+    background=signal[0]
+    hp=list()
+    hp.append(0)
+    for i in range(1, len(signal)):
+        signal[i]=float(signal[i])
+        background=(iir_tc*background)+(1-iir_tc)*signal[i]
+        hp.append(signal[i]-background)
+    return hp
     
 def bin_power(X,Band,Fs):
     C = fft.fft(X)
-    #C = abs(C)
+    C=C/len(X)
+    C = abs(C)
+    C=C**2
     newc=list()
-    for i in C:
-        newc.append(i*i.conjugate())
+    #for i in C:
+     #   newc.append(i*i.conjugate())
     C=numpy.array(newc)
     
     #numpy.square(C)
@@ -45,8 +60,8 @@ def bin_power(X,Band,Fs):
             Freq = float(Band[Freq_Index])										
             Next_Freq = float(Band[Freq_Index+1])
             Power[Freq_Index] = sum(C[numpy.floor(Freq/Fs*len(X)):numpy.floor(Next_Freq/Fs*len(X))])
-    Power_Ratio = Power/sum(Power)
-    return Power, Power_Ratio	
+    Power_Ratio = Power/len(Power)
+    return Power,Power_Ratio	
 
 
 	

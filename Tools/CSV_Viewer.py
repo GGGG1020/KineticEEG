@@ -75,11 +75,11 @@ def rollingbarplot(file, step, size,sensor):
     while not len(tree["F3"])==size:
         for i in a.sensor2column:
             fed=a.get128more(i)
-            fed={i:fed}
-            PreprocessUtils.
-            temproc.update_data(fed)
-            temproc.do_high_pass()
-            fed=temproc.data_dict
+           # fed={i:fed}
+            fed=PreprocessUtils.butter_highpass_filter(fed,0.16, 128,1)
+            #temproc.update_data(fed)
+            #temproc.do_high_pass()
+            #fed=temproc.data_dict
             tree[i]+=fed
     while True:
         if len(tree[0])==size:
