@@ -34,7 +34,7 @@ def get_alpha_beta_pow(data):
         Freq=float(Band[Freq_Index])
         
 def highpass(signal):
-    iir_tc=0.94 
+    iir_tc=0.98
     background=signal[0]
     hp=list()
     hp.append(0)
@@ -43,16 +43,24 @@ def highpass(signal):
         background=(iir_tc*background)+(1-iir_tc)*signal[i]
         hp.append(signal[i]-background)
     return hp
-    
+	
 def bin_power(X,Band,Fs):
-    	C = fft(X)
-	C = abs(C)
-	Power =zeros(len(Band)-1);
-	for Freq_Index in xrange(0,len(Band)-1):
-		Freq = float(Band[Freq_Index])									    
-		Next_Freq = float(Band[Freq_Index+1])
-		Power[Freq_Index] = sum(C[floor(Freq/Fs*len(X)):floor(Next_Freq/Fs*len(X))])
-	Power_Ratio = Power/sum(Power)
-	return Power, Power_Ratio	
+    C = fft.fft(X)
+    #C/len(X)]
+    print('Hi')
+    newc=list()
+    for i in C:
+        newc.append(numpy.sqrt((i.real**2)+(i.imag**2)))
+        
+    newc=numpy.array(newc)
+   # newc=newc**2
+    
+    Power =numpy.zeros(len(Band)-1);
+    for Freq_Index in range(0,len(Band)-1):
+            Freq = float(Band[Freq_Index])									    
+            Next_Freq = float(Band[Freq_Index+1])
+            Power[Freq_Index] = sum(newc[numpy.floor(Freq/Fs*len(X)):numpy.floor(Next_Freq/Fs*len(X))])/len(newc[numpy.floor(Freq/Fs*len(X)):numpy.floor(Next_Freq/Fs*len(X))])
+    Power_Ratio = Power/sum(Power)
+    return Power, Power_Ratio	
 
     
