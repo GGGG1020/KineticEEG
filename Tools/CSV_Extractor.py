@@ -20,6 +20,9 @@ class CSVExtractor:
             for j in self.sensor2column:
                 self.nicethingy[j].append(self.large_list[indx][self.sensor2column[j]])
             indx+=1
+    def get_with_constraints(self,sensor, startpos, endpos):
+        return self.nicethingy[sensor][startpos:endpos]
+    
     def get_data_from_sensor(self, sensor, length):
         newfileob=open(self.file,"r")
         csv_read=csv.reader(newfileob)
