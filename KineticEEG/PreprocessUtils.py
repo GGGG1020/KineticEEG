@@ -47,7 +47,7 @@ def highpass(signal):
 def bin_power(X,Band,Fs):
     C = fft.fft(X)
     #C/len(X)]
-    print('Hi')
+    #print('Hi')
     newc=list()
     for i in C:
         newc.append(numpy.sqrt((i.real**2)+(i.imag**2)))
