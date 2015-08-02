@@ -26,7 +26,7 @@ def bplot(file, sensor, rects1, a, fig):
         stuff2=PreprocessUtils.bin_power(stuff1, [1,4,7,13,30], 128)
         stuff4=abs(20*numpy.log(stuff2))
         stuff5=tuple(stuff4[0])
-        #print(stuff5)
+        print(stuff5)        #print(stuff5)
         counter=int()
 ##        for i in rects1:
 ##            #print("Getting here?")
