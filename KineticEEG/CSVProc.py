@@ -42,7 +42,7 @@ def bplot(file, sensor, a):
             counter+=(0.125)
         except:
             return retlist
-a=CSV_Extractor.CSVExtractor("C:/Users/Gaurav/Documents/CSV/Done/Zander -1-12.02.15.13.18.23.CSV")
+a=CSV_Extractor.CSVExtractor(FILE)
 finlist=bplot(FILE,FFT_SENSOR,  a)
         
         
