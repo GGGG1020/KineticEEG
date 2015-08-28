@@ -2,9 +2,9 @@ import ClassifyUtils
 import copy
 class SensorDetection:
     
-    def __init__(self, dict1, sensor, data):
+    def __init__(self, dict1, sensor):
         self.train=dict1[sensor]
-        self.data=data
+        self.data=None
         self.alldis=list()
     def run_detection(self):
         """Given a window of data this sets a threshold"""
@@ -18,7 +18,7 @@ class SensorDetection:
             dis=ClassifyUtils.euclideandistance(self.data, trainset, len(trainset))
             dis1=tuple((i[-1], dis))
             self.alldis.append(dis1)
-            self.alldis.sort(key=lambda tup:tup[1], reverse=True)
+            self.alldis.sort(key=lambda tup:tup[1], reverse=False)
             #Now do some vote gettingi
         consideration=self.alldis[0:TC_CONSTANT-1]
         for i in consideration:
@@ -28,6 +28,8 @@ class SensorDetection:
                 detected+=1
         if Null>detected:print("NULL")
         else:print("Got a bite!")
+    def update(self, data):
+        self.data=data
 def load(file):
     """Value building"""
     a=open(file, "r")
@@ -54,7 +56,7 @@ def load(file):
         del bod[0:int(legnthoftrain)]
     return end_dict
         
-        
+def dotime():pass        
         
         
         
