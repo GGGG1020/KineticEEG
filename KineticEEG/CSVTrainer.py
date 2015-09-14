@@ -4,27 +4,37 @@ sys.path.append("C:/Users/Gaurav/Documents/GitHub/KineticEEG/KineticEEG")
 sys.path.append("C:/Users/Gaurav/Documents/GitHub/KineticEEG/Tools")
 import CSV_Extractor
 import PreprocessUtils
+import operator
+import CSVProc
 import numpy
 import time
 class CSV_Trainer:
     """This trains with CSV"""
-    def __init__(self, file):
+    def __init__(self, file,trainfile):
         ##self.fileobj=open(file, mode='r')
         self.file_name=str(file)
         self.csvextract=CSV_Extractor.CSVExtractor(self.file_name)
         self.SENSORS_OF_INTEREST=["FC5","F3","F4","FC6"]
+        self.maindict=dict()
+        self.trainfileobj=open(trainfile, "a+")
+        for i in self.SENSORS_OF_INTEREST:
+            self.maindict[i]=CSVProc.Proc(self.file_name, i, self.csvextract)
         self.rawspecdict=dict()
         self.proc_specdict=dict()
-    def preprocess(self, dictth,dictt1):
-        for i in dictth.keys():
-            nowconsd=dictth[i]
-            tree=PreprocessUtils.highpass(nowconsd)
-            tree1=numpy.hanning(1024)*tree
-            stuff2=PreprocessUtils.bin_power(tree1, [1,4,7,13,30], 128)
-            stuff4=abs(20*numpy.log(stuff2))
-            stuff5=tuple(stuff4[0])
-            dictt1[i].append(stuff5[0])
-        return dictt1            
+    def getlist(self, sensor,secs, secs1):
+        return self.maindict[sensor][(secs-8)*8:(secs1-8)*8]
+    def train_nuetral(self, secs):
+        for i in self.SENSORS_OF_INTEREST: 
+            data=self.getlist(i, secs, secs+2)
+            dataspec=map(operator.itemgetter(0),data)
+            self.dataspec=list(dataspec)
+            self.avg=sum(self.dataspec)/len(self.dataspec)
+            teblist=self.dataspec[0:10]
+            strstowrite=[str(i)+"\n" for i in teblist]
+            strstowrite.insert(0, str(("#,"+i+","+"NULL"+','+"10"+"\n")))
+            for r in strstowrite:
+                self.trainfileobj.write(r)
+                #print(r)
     def train_action(self, action,time1):
         """time1 and time2 seconds"""
         assert action=='kick',action=='arm'
