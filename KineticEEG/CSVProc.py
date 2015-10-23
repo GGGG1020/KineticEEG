@@ -14,7 +14,7 @@ FFT_SENSOR="FC5"
 class CSVProc:
     def __init__(self, extract):
         """Extract is a CSV_Extractor.CSVExtractor object"""
-        self.data_tree=dict
+        self.data_tree=dict()
         self.sensors= ['F3', 'O2', 'O1', 'F8', 'F4', 'FC6', 'AF3', 'P7', 'P8', 'FC5', 'T8', 'AF4', 'F7', 'T7']
         for i in self.sensors:
             self.data_tree[i]=self.__proc(i, extract)
@@ -22,8 +22,12 @@ class CSVProc:
         """Allows maximum control over data"""
         buildlist=dict()
         word2list={"delta":0, "theta":1, "mu":2, "beta":3}
-        indices=list(map(str.lower, bands))
+        indices1=list(map(str.lower, bands))
+        indices=list()
+        for l in indices1:
+            indices.append(word2list[l])
         for i in sensors:
+            buildlist[i]={}
             for j in indices:
                 buildlist[i][j]=[w[j] for w in self.data_tree[i]]
         return buildlist

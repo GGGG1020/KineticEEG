@@ -58,6 +58,10 @@ def load(file):
         
 def dotime():pass        
         
+class AverageBasedDetector:
+    def __init__(self, src):
+        """src must be a method-bearing object"""
+        
         
         
         
