@@ -17,7 +17,7 @@ class SensorClassifier:
         self.beta_val=float(self.sensordata[3])
         self.inst=list([self.delta_val, self.theta_val, self.alpha_val, self.beta_val])
     def get_neighbors(self,num):
-        self.ds=list()
+        self.ds=list()x
         leng=len(self.trainingdata)-1
         for i in range(len(self.trainingdata)):
             distance=ClassifyUtils.euclideandistance(self.inst, self.trainingdata[i],leng)

@@ -5,7 +5,7 @@ import numpy
 Specification for DataProcessor
 ------------------------------
 The arrays taken in are of the following format:
-[AF3, F7, F3, FC5, T7, P7, O1,O2,P8,T8, FC6, F4,AF4]
+{AF3, F7, F3, FC5, T7, P7, O1,O2,P8,T8, FC6, F4,AF4}
 The array for the each contains the uV data."""
 class DataProcessor:
     """This does all the data processing in it's stages:
@@ -16,7 +16,7 @@ class DataProcessor:
     def do_high_pass(self):
         for item in self.data_dict.keys():
             self.data_dict[item]=PreprocessUtils.butter_highpass_filter(self.data_dict[item],0.16,128,5)
-    def do_hanning_wndow(self):
+    def do_hanning_window(self):
         for item in self.data_dict.keys():
             self.data_dict[item]=PreprocessUtils.basic_window(self.data_dict[item])
     def do_bin_power(self):

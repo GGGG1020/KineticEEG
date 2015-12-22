@@ -11,7 +11,7 @@ class CSVExtractor:
         indx=int(0)
         for i in self.csv_read:
             self.large_list.append(i)
-        print(len(self.large_list))
+        ##print(len(self.large_list))
         if self.large_list[0][0][0]=="t":
             del self.large_list[0]
         self.lennylen=len(self.large_list)

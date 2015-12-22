@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy
 import CSV_Extractor
 import time
-FILE="C:/Users/Gaurav/Documents/CSV/Done/Zander -1-12.02.15.13.18.23.CSV"   
-FFT_SIZE=1024
+FILE="C:/Users/Gaurav/Documents/CSV/Done/Will-3-13.02.15.13.15.54.CSV"  
+FFT_SIZE=512
 STEP_SIZE=16
 FFT_SENSOR="FC5"
 def bplot(file, sensor, rects1, a, fig):
@@ -25,12 +25,12 @@ def bplot(file, sensor, rects1, a, fig):
     while True:
         inittime=time.time()
         artree=PreprocessUtils.highpass(tree)
-        win32=numpy.hanning(1024)
+        win32=numpy.hanning(512)
         artree=numpy.array(artree)
         stuff1=win32*artree
         stuff2=PreprocessUtils.bin_power(stuff1, [1,4,7,13,30], 128)
         stuff4=abs(20*numpy.log(stuff2))
-        stuff5=tuple(stuff4[0])
+        stuff5=tuple(stuff4[2])
         print(str(stuff5)+"-"+str(counter))        
         goodlist.append(stuff5)
         del tree[0:16]

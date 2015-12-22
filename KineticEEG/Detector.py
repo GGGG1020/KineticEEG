@@ -56,11 +56,51 @@ def load(file):
         del bod[0:int(legnthoftrain)]
     return end_dict
         
-def dotime():pass        
+class DetectionEvent:
+    def __init__(self, code, indx):
+        self.code=code
+        self.indx=int()
         
 class AverageBasedDetector:
-    def __init__(self, src):
+    def __init__(self, num):
         """src must be a method-bearing object"""
+        self.data=dict()
+        self.num=num
+    def __getdirection(self, listy):
+        iir_tc=0.98
+        background=signal[0]
+        hp=list()
+        hp.append(0)
+        for i in range(1, len(signal)):
+            signal[i]=float(signal[i])
+            background=(iir_tc*background)+(1-iir_tc)*signal[i]
+            hp.append(signal[i]-background)
+        return hp
+    def update(self, data):
+        """Add some data into the detector for detection"""
+        self.data.update(data)
+    def detect(self):
+        self.diffs={"FC5":[], "FC6":[], "F4":[], "F3":[]}
+        points=0
+        for i in ["FC5","FC6", "F4", "F3"]:
+            self.diffs[i]=self.__getdirection(self.data[i])
+        for i in self.diffs.keys():
+            points1=0
+            for k in self.diffs[i]:
+                if k<0 and not points1==self.num:
+                    points1+=1
+                elif points1==self.num:
+                    points+=1
+                    break
+                else:
+                    points1=0
+        return [bool((points/4)>0.5)]
+    
+                
+                    
+                    
+                    
+        
         
         
         
