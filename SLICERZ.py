@@ -1,5 +1,6 @@
 import statistics
 import math
+import numpy
 import matplotlib.pyplot as plt
 class Slope:
     def __init__(self, location, dire):
@@ -41,14 +42,7 @@ class ClassifierTester:
                      99.88353380337247, 99.65276313158463, 99.20857016079242, 98.5202096519103, 97.58587741736116,
                      96.41784563807974, 95.04112717584547,
                      93.50302041301316, 91.884516870911, 90.31773467696574]
-        self.dat1=[90.37764633360645, 91.014555470066, 91.721352379002,
-                     93.42960343758679, 92.1270701625897, 93.83838282891722,
-                     94.61756769951398, 95.62545876818837, 96.7447585417242,
-                     97.7838836655262, 97.66583077945143, 99.35386506293614,
-                     100.82108980552063, 100.0453546435296, 101.02926641061357,
-                     99.88353380337247, 99.65276313158463, 98.20857016079242, 97.5202096519103, 97.58587741736116,
-                     95.41784563807974, 95.04112717584547,
-                     93.50302041301316, 92.884516870911, 90.31773467696574]
+        self.dat1=numpy.add(self.dat, numpy.random.normal(0,1,25))
         self.classif=Classifier()
         plt.ion()
         plt.plot(self.dat)
@@ -132,23 +126,24 @@ class DataOutline:
         sumo=0
         slopes=filter(lambda x:bool(type(x)==Slope),self.outline)
         slopes=list(slopes)
+        medianthis=list()
+        ind=[]
         for i in range(len(ge)):
             curr=ge[i]
             currcomp=slopes[i]
             su=0
             for r in curr:
-                su+=t(abs(r-currcomp.dire))
-            sumo+=(su/len(curr))
+                ind.append(t(abs(r-currcomp.dire)))
+            medianthis.append(statistics.mean(ind))
         for i in present:
-            sumo+=i
-        sumo=sumo/(len(ge)+len(present))
-        return sumo        
+            medianthis.append(i)
+        return statistics.median(medianthis)      
 ##        print(ge)
 ##        print(self.outline)
 ##        for i in self.outline:
 ##           if ge[count] in i.dire:lim+=1;print(ge[count])
 ##           count+=1
-##        print(lim)
+##        print(lim) 
 ##        return (len(self.outline)*0.8)<=lim
 ##            
 ##            
@@ -397,7 +392,6 @@ class iClassifier:
         if False not in results:
             return True
         else:return False
-    
     def train(self, myint, indx):
         if not self.data:
             self.data=myint
