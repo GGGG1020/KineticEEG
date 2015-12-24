@@ -1,27 +1,36 @@
 import statistics
-
 import math
 import matplotlib.pyplot as plt
+class Slope:
+    def __init__(self, location, dire):
+        self.loc=location
+        self.dire=dire
+    def __repr__(self):
+        return "Slope @ "+str(self.loc)+" "+str(self.dire)
 class TempFeature:
     def __init__(self, location,data:list):
         self.location=location
-class Feature:
-    def __init__(self,location, direction):
-        self.loc=location
-        self.dire=direction
     def __repr__(self):
-        return "Feature @ "+str(self.loc)+" with direction "+str(self.dire)
+        return "Feature @ "+str(self.location)
+class Feature:
+    def __init__(self,location,lo):
+        self.loc=location
+        self.lo=lo
+      #  self.dire=direction
+    def __repr__(self):
+        return "Feature @ "+str(self.loc)+" with shape"+str(self.lo)
 class Classifier:
     def __init__(self):
         self.train1=[]
     def train(self, data):
         self.finder=FeatureFinder()
-        deftolerance=self.finder.train(highpass(data))
-        tree=self.finder.scan_data(highpass(data))
-        self.outline=DataOutline(tree, highpass(data))
+        deftolerance=self.finder.train(data)
+        tree=self.finder.scan_data(data)
+        print(tree)
+        self.outline=DataOutline(tree, data)
         self.outline.scan()
     def classify(self, data):
-       return self.outline.runit(highpass(data))
+       return self.outline.runit(data)
 class ClassifierTester:
     def __init__(self):
         self.dat=[90.37764633360645, 91.014555470066, 91.721352379002,
@@ -32,13 +41,13 @@ class ClassifierTester:
                      99.88353380337247, 99.65276313158463, 99.20857016079242, 98.5202096519103, 97.58587741736116,
                      96.41784563807974, 95.04112717584547,
                      93.50302041301316, 91.884516870911, 90.31773467696574]
-        self.dat1=[91.37764633360645, 91.014555470066, 91.721352379002,
+        self.dat1=[90.37764633360645, 91.014555470066, 91.721352379002,
                      93.42960343758679, 92.1270701625897, 93.83838282891722,
                      94.61756769951398, 95.62545876818837, 96.7447585417242,
                      97.7838836655262, 97.66583077945143, 99.35386506293614,
-                     99.82108980552063, 100.0453546435296, 100.02926641061357,
-                     99.88353380337247, 99.65276313158463, 99.20857016079242, 97.5202096519103, 97.58587741736116,
-                     96.41784563807974, 95.04112717584547,
+                     100.82108980552063, 100.0453546435296, 101.02926641061357,
+                     99.88353380337247, 99.65276313158463, 98.20857016079242, 97.5202096519103, 97.58587741736116,
+                     95.41784563807974, 95.04112717584547,
                      93.50302041301316, 92.884516870911, 90.31773467696574]
         self.classif=Classifier()
         plt.ion()
@@ -55,6 +64,7 @@ class DataOutline:
         self.listy=[]
         self.outline=[]
         self.download=download
+        print(self.download)
         self.data=data
         for i in range(len(download)-1):
             self.listy.append(data[download[i].location:download[i+1].location])
@@ -76,39 +86,96 @@ class DataOutline:
                 angles=angles=1.0-((180-x)*(0.5/45))
             return angles
         return degs
-        
+    def t(self, x):
+            angles=1.0-(x*(0.5/45))
+            if angles<0:
+                angles=angles=1.0-((180-x)*(0.5/45))
+            return angles
+            return degs
+    def features_present(self, othertmpft):
+
+       processed=self.dict_process(othertmpft)
+       features=list()
+       for i in self.outline:
+           if type(i)==Feature:features.append(i)
+           
+       print(len(processed))
+       sendback=list()
+       for i in features:
+           currindx=i.loc#/len(self.data)
+           #currindx=round(currindx*len(processed))
+           print(currindx)
+           important=processed[currindx-2:currindx+2]
+           print(len(important))
+           sendback.append(self.t(abs(statistics.mean(important)-i.lo)))
+       print(sendback)
+       return sendback
     def runit(self, data):
         ge=list()
         rep=list()
+        present=self.features_present(data)
         count=0
         lim=0
+        def t(x):
+            angles=1.0-(x*(0.5/45))
+            if angles<0:
+                angles=angles=1.0-((180-x)*(0.5/45))
+            return angles
         for i in range(len(self.outline)-1):
-            ge.append(statistics.mean(self.dict_process(data[self.outline[i].loc:self.outline[i+1].loc])))
-            print(ge)
-        ge.append(statistics.mean(self.dict_process(data[self.outline[-1].loc:len(data)])))
+            ge.append(self.dict_process(data[self.outline[i].loc:self.outline[i+1].loc]))
+        ge.append(self.dict_process(data[self.outline[-1].loc:len(data)-1]))
         print(ge)
-        print(self.outline)
-        for i in self.outline:
-           if ge[count] in i.dire:lim+=1;print(ge[count])
-           count+=1
-        print(lim)
-        return (len(self.outline)*0.8)<=lim
-            
-            
-            
+        ge=filter(lambda x:bool(not len(x)==0), ge)
+        ge=list(ge)
+        print(ge)
+        #print(self.outline)
+        sumo=0
+        slopes=filter(lambda x:bool(type(x)==Slope),self.outline)
+        slopes=list(slopes)
+        for i in range(len(ge)):
+            curr=ge[i]
+            currcomp=slopes[i]
+            su=0
+            for r in curr:
+                su+=t(abs(r-currcomp.dire))
+            sumo+=(su/len(curr))
+        for i in present:
+            sumo+=i
+        sumo=sumo/(len(ge)+len(present))
+        return sumo        
+##        print(ge)
+##        print(self.outline)
+##        for i in self.outline:
+##           if ge[count] in i.dire:lim+=1;print(ge[count])
+##           count+=1
+##        print(lim)
+##        return (len(self.outline)*0.8)<=lim
+##            
+##            
     def scan(self):
         dre=list()
         final=list()
+        dre=self.dict_process(self.data)
+        pol=[]
+        oo=list()
         for d in self.listy:
             r=self.__process(d)
-            
-            if len(r[1])<2 and not len(r[1])==0:dre.append(Area(statistics.mean(r[1]),statistics.stdev(self.data)))
+            if len(r[1])<2 and not len(r[1])==0:pol.append(statistics.mean(r[1]))
             elif len(r[1])==0:pass
-            else:dre.append(Area(statistics.mean(r[1]), statistics.stdev(r[1])))
-        for i in range(len(dre)):
-            final.append(Feature(self.download[i].location, dre[i]))
+            else:pol.append(statistics.mean(r[1]))
+            print(pol)
+        for i in range(len(pol)):
+            final.append(Slope(self.download[i].location, pol[i]))
+            print(final)
+        del self.download[0]
+        del self.download[-1]
+        last=1
+        for i in range(len(self.download)):
+            final.insert(i+last, Feature(self.download[i].location, statistics.mean(dre[self.download[i].location-2:self.download[i].location+2])))
+            last+=1
+            print(final)
         self.outline=final
-    
+        print(self.outline)
 class FeatureFinder:
     def __init__(self):
         self.similarity_percentage=float()
@@ -116,11 +183,10 @@ class FeatureFinder:
     def train(self, trainer):
         #Here, we initialize values for the ff
         mylin=self.__process(trainer)
-        self.similarity_percentage_area=Area(statistics.mean(mylin), statistics.stdev(mylin))
+        self.similarity_percentage_area=Area(statistics.mean(mylin[0:4]), statistics.stdev(mylin))
         print(self.similarity_percentage_area)
         self.similarity_percentage_area.maxy=1.0 #Force acceptance
         return self.similarity_percentage_area
-    
     def __process(self, data):
         liz=difference_list(data)
         degs=[math.degrees(math.atan(i)) for i in liz]
@@ -163,14 +229,14 @@ class FeatureFinder:
 class FeatureTester:
     def __init__(self):
         self.my=FeatureFinder()
-        self.my.train(highpass([90.37764633360645, 91.014555470066, 91.721352379002,
+        self.my.train([90.37764633360645, 91.014555470066, 91.721352379002,
                      92.42960343758679, 93.1270701625897, 93.83838282891722,
                      94.61756769951398, 95.62545876818837, 96.7447585417242,
                      97.7838836655262, 98.66583077945143, 99.35386506293614,
                      99.82108980552063, 100.0453546435296, 100.02926641061357,
                      99.88353380337247, 99.65276313158463, 99.20857016079242, 98.5202096519103, 97.58587741736116,
                      96.41784563807974, 95.04112717584547,
-                     93.50302041301316, 91.884516870911, 90.31773467696574]))
+                     93.50302041301316, 91.884516870911, 90.31773467696574])
         self.data=[90.37764633360645, 91.014555470066, 91.721352379002,
                      92.42960343758679, 93.1270701625897, 93.83838282891722,
                      94.61756769951398, 95.62545876818837, 96.7447585417242,
@@ -180,14 +246,14 @@ class FeatureTester:
                      96.41784563807974, 95.04112717584547,
                      93.50302041301316, 91.884516870911, 90.31773467696574]
     def run(self):
-        j=self.my.scan_data(highpass([90.37764633360645, 91.014555470066, 91.721352379002,
+        j=self.my.scan_data([90.37764633360645, 91.014555470066, 91.721352379002,
                      92.42960343758679, 93.1270701625897, 93.83838282891722,
                      94.61756769951398, 95.62545876818837, 96.7447585417242,
                      97.7838836655262, 98.66583077945143, 99.35386506293614,
                      99.82108980552063, 100.0453546435296, 100.02926641061357,
                      99.88353380337247, 99.65276313158463, 99.20857016079242, 98.5202096519103, 97.58587741736116,
                      96.41784563807974, 95.04112717584547,
-                     93.50302041301316, 91.884516870911, 90.31773467696574]))
+                     93.50302041301316, 91.884516870911, 90.31773467696574])
         print(j)
         rt=DataOutline(j, self.data)
         self.g=rt.scan()
@@ -215,13 +281,6 @@ class SliceTrainer:
                 i.train(data)
     def classify(self, other):
         for i in range(len(self.__split_into(other))-1):pass            
-            
-            
-                
-            
-        
-        
-        
     def __split_into(self, listy):
         g=list(range(0, len(listy), 4))
         newlist=list()
