@@ -22,7 +22,8 @@ class TryClassifier:
         
         
 if __name__=="__main__":
-
+    import sys
+    
     c=TryClassifier("C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV","C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV")
     g=[0,0,0,0]
     for i in range(4, 133):
@@ -30,7 +31,6 @@ if __name__=="__main__":
         g.append(j)
     co=0
     for p in g:
-        #if p>0.9:
         print(str(p)+"/t"+str(co))
         co+=1
     #c.train_and_run(tuple((8*(62-4), 8*(64-4))), tuple((8*(89-4), 8*(91-4))), [ "T7",

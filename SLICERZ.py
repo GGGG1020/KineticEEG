@@ -95,9 +95,9 @@ class RunThroughClassifier:
         low25=numpy.percentile(dat, 25)
         high75=numpy.percentile(dat, 75)
         if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
-            dat.append(max(dat))
+            dat.append(float(max(dat)+(statistics.mean(dat)-low25)))
         else:
-            dat.append(min(dat))
+            dat.append(float(min(dat)-(high75-statistics.mean(dat))))
         return statistics.mean(dat)
     def test_classifiers(self, frozen, indx, indx1):
         toret=list()
