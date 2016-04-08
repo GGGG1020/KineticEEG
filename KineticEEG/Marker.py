@@ -41,7 +41,7 @@ class MarkerApplication:
                 #print("Data"+str(data))
                 if not type(data)==str:print([len(data[i]) for i in data])
                 print(self.processer.is_alive())
-                print(data)
+                #print(data)
                 self.system_up_time+=16/128
                 ms=self.checkMarkerStatus()
                 #print(self.system_up_time)

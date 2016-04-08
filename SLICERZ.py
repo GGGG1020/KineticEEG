@@ -15,9 +15,7 @@ class Modulator:
                 j.append(i)
         a=min(j, key=lambda x:(abs(data.loc-x.loc)))
         penalize_by=abs(a.loc-features.loc)
-        
-        
-        
+    
     def scan_for_potentiate(self, data, percentage, outline):
         """This is slightly difficult"""
         for  i in self.register_and_potentiate:
@@ -73,14 +71,6 @@ class RunThroughClassifier:
         me=penalize_by
         me*=promote_by
         return me
-    
-
-        
-                #promote_by+=0.1
-        
-        
-                
-        
     def run_train(self,indx, indx1):
         for i in self.myclassifs:
             self.myclassifs[i].train(self.data[i][2][indx:indx1])
@@ -276,7 +266,7 @@ class Classifier:
         self.outline=DataOutline(tree, data, self.a)
         self.outline.scan()
     def classify(self, data):
-       return self.outline.runit(data)
+        return self.outline.runit(data)
 class ClassifierTester:
     def __init__(self):
         self.dat=[90.37764633360645, 91.014555470066, 91.721352379002,

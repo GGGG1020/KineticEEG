@@ -55,7 +55,7 @@ class EmotivDataGetter:
             self.sens=['AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4']
             self.eEvent=libEDK.EE_EmoEngineEventCreate()
             self.eState= libEDK.EE_EmoStateCreate()
-            print("Hi")
+            #print("Hi")
             self.userID =c_uint(0)
             self.nSamples=c_uint(0)
             self.nSam= c_uint(0)
@@ -164,9 +164,9 @@ class EmotivDataGetter:
                                     self.dct1[i].append(arr[sampleIdx])
                                 if len(self.dct1["FC5"])==512:
                                     q.send(self.dct1)
-                                    eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "w")
-                                    eefe.write(str(self.dct1))
-                                    eefe.close()
+                                   # eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "w")
+                                    #eefe.write(str(self.dct1))
+                                    #eefe.close()
                                     first_iter=False
                                     for i in self.sens:
                                         self.dct1[i]=[]
@@ -198,13 +198,13 @@ class EmotivDataGetter:
                                     q.send(self.dct1)
                                     #q.put(len(self.dct1["FC5"]))
                                     
-                                    eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "a")
-                                    eefe.write("\n")
-                                    eefe.write("\n")
-                                    eefe.write(str(len(self.dct1["FC5"])))
-                                    eefe.write("\n")
-                                    eefe.write(str(self.dct1))
-                                    eefe.close()
+                                    #eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "a")
+                                    #eefe.write("\n")
+                                    #eefe.write("\n")
+                                    #eefe.write(str(len(self.dct1["FC5"])))
+                                    #eefe.write("\n")
+                                    #eefe.write(str(self.dct1))
+                                    #eefe.close()
                                     #print("Hi", time.time())
                                     for i in self.sens:
                                         count=0
@@ -248,9 +248,9 @@ class EEG_Processer:
         b={}
         #q2.put("Hi")
         firstdat=q.recv()
-        fileh=open("C:/Users/Gaurav/Desktop/Testlogs.txt", "w")
-        fileh.write(str(firstdat))
-        fileh.close()
+        #fileh=open("C:/Users/Gaurav/Desktop/Testlogs.txt", "w")
+        #fileh.write(str(firstdat))
+        #fileh.close()
         #q2.put('Hi')
         if type(firstdat)==str:q2.put(firstdat)
         #if firstdat=="j":q2.put("j")
@@ -271,9 +271,9 @@ class EEG_Processer:
             
             secondat=q.recv()
             #q2.send("recieved one")
-            fileh=open("C:/Users/Gaurav/Desktop/Testlogs.txt", "w")
-            fileh.write(str(secondat))
-            fileh.close()
+            #fileh=open("C:/Users/Gaurav/Desktop/Testlogs.txt", "w")
+            #fileh.write(str(secondat))
+            #fileh.close()
             #q2.put('Hi')
             if type(secondat)==str:q2.put(secondat)
             #if str(secondat)=="die": q2.put("die");break
