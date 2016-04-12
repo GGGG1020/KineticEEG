@@ -2,7 +2,9 @@
 import BaseEEG
 import multiprocessing
 import tkinter
+import ctypes
 import time
+kernel=ctypes.windll.kernel32
 class MarkerApplication:
     def __init__(self, process1, process2, q, dumpto):
         self.getter=process1
@@ -29,28 +31,34 @@ class MarkerApplication:
                 print('Please {0} in {1}'.format(i, (self.system_up_time-i[1])))
     def runApp(self):
         self.getter.start()
-        print(self.getter.pid)
+        getpid=self.getter.pid
+        procget=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(getpid))
+        kernel.SetPriorityClass(procget, 0x0100)
         self.processer.start()
-        print(self.processer.pid)
+        procpid=self.processer.pid
+        procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
+        kernel.SetPriorityClass(procproc, 0x0100)
         try:
             while self.getter.is_alive():
                 #print("Entered Loop")
                 data=self.q.recv()
-                if type(data)==str:print(data)
+                
+                #if type(data)==str:print(data)
                 #print("Got data"+str(len(data)))
                 #print("Data"+str(data))
-                if not type(data)==str:print([len(data[i]) for i in data])
-                print(self.processer.is_alive())
+                print(len(data))
+                #print(self.processer.is_alive())
+                print(time.time())
                 #print(data)
                 self.system_up_time+=16/128
-                ms=self.checkMarkerStatus()
+                #ms=self.checkMarkerStatus()
                 #print(self.system_up_time)
 ##                for i in data:
 ##                    i.append(ms)
 ##                self.writelines(data) 
         except:
             self.getter.terminate()
-            #self.processer.terminate()
+            self.processer.terminate()
             self.closedump()
             raise
 if __name__=='__main__':

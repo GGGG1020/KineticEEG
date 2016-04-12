@@ -100,7 +100,7 @@ class EmotivDataGetter:
                     libEDK.EE_DataUpdateHandle(0, self.hData)
                     libEDK.EE_DataGetNumberOfSample(self.hData,self.nSamplesTaken)
                     if first_iter:
-                        if self.nSamplesTaken[0] == 512:
+                        if self.nSamplesTaken[0] != 0:
                             self.nSam=self.nSamplesTaken[0]
                             arr=(ctypes.c_double*self.nSamplesTaken[0])()
                             ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))                      
@@ -110,8 +110,9 @@ class EmotivDataGetter:
                                 for i in self.targetChannelList:
                                     libEDK.EE_DataGet(hData,useless.index(i),byref(arr), nSam)
                                     self.dct1[i].append(arr[sampleIdx])
-                            q.put(self.dct1)
-                            first_iter=False
+                                if len(self.dct1["F3"])==512:
+                                    q.put(self.dct1)
+                                    first_iter=False
                     else:
                         if self.nSamplesTaken==16:
                             self.nSam=self.nSamplesTaken[0]
@@ -122,7 +123,10 @@ class EmotivDataGetter:
                                 for i in self.sens: 
                                     libEDK.EE_DataGet(hData,i,byref(arr), nSam)
                                     self.dct1[i].append(arr[sampleIdx])
-                            q.put(self.dct1)
+                                if len(self.dct1["F3"])==512:
+                                    q.put(self.dct1)
+                                    first_iter=False
+                
         except:
             q.put("die")
             self.cleanup()
@@ -152,6 +156,95 @@ class EmotivDataGetter:
                             libEDK.EE_DataGetNumberOfSample(self.hData,self.nSamplesTaken)
                         #print(self.nSamplesTaken[0], time.time())
                         if self.nSamplesTaken[0]==512:
+                            self.nSam=self.nSamplesTaken[0]
+                            arr=(c_double*512)()
+                            libEDK.EE_DataGetNumberOfSample(self.hData,self.nSamplesTaken)
+                            ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))                      
+                            data = array('d')
+                            useless=list(self.sens)
+                            for sampleIdx in range(self.nSamplesTaken[0]): 
+                                for i in self.sens:
+                                    libEDK.EE_DataGet(self.hData,useless.index(i),byref(arr), self.nSam)
+                                    self.dct1[i].append(arr[sampleIdx])
+                                if len(self.dct1["FC5"])==512:
+                                    q.send(self.dct1)
+                                   # eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "w")
+                                    #eefe.write(str(self.dct1))
+                                    #eefe.close()
+                                    first_iter=False
+                                    for i in self.sens:
+                                        self.dct1[i]=[]
+                    count=0
+                    while True:
+                      imi=time.time()
+                     
+                      libEDK.EE_DataUpdateHandle(0, self.hData)
+                      libEDK.EE_DataGetNumberOfSample(self.hData, self.nSamplesTaken)
+                      #print(self.nSamplesTaken[0], time.time())
+                      #while not self.nSamplesTaken[0]==16:
+                          #libEDK.EE_DataUpdateHandle(0, self.hData)
+                         # libEDK.EE_DataGetNumberOfSample(self.hData, self.nSamplesTaken)
+                       #   print(self.nSamplesTaken[0])
+                      if self.nSamplesTaken[0]!=0:
+                           # libEDK.EE_DataUpdateHandle(0, self.hData)
+                            self.nSam=self.nSamplesTaken[0]
+                            arr=(c_double*self.nSamplesTaken[0])()
+                            ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))                  
+                            data = array('d')
+                            useless=list(self.sens)
+                            time.sleep(0.125-(time.time()-imi))
+                            for sampleIdx in range(self.nSamplesTaken[0]): 
+                                for i in self.sens: 
+                                    libEDK.EE_DataGet(self.hData,useless.index(i),byref(arr), self.nSam)
+                                    #print("jo", len(self.dct1["FC5"]))
+                                    self.dct1[i].append(arr[sampleIdx])
+                                count+=1
+                                if count==16:
+                                    q.send(self.dct1)
+                                    #q.put(len(self.dct1["FC5"]))
+                                    
+                                    #eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "a")
+                                    #eefe.write("\n")
+                                    #eefe.write("\n")
+                                    #eefe.write(str(len(self.dct1["FC5"])))
+                                    #eefe.write("\n")
+                                    #eefe.write(str(self.dct1))
+                                    #eefe.close()
+                                    #print("Hi", time.time())
+                                    for i in self.sens:
+                                        count=0
+                                        self.dct1[i]=[]
+                            
+        except:
+            
+            self.cleanup()
+            q.close()
+            raise
+        
+    def scan_loop1(self,q):
+        first_iter=bool(True)
+        for i in self.sens:
+            self.dct1[i]=[]
+        try:
+            while True :
+                state = libEDK.EE_EngineGetNextEvent(self.eEvent)
+                if state == 0:
+                    eventType = libEDK.EE_EmoEngineEventGetType(self.eEvent)
+                    libEDK.EE_EmoEngineEventGetUserId(self.eEvent, self.user)
+                    if eventType == 16: #libEDK.EE_Event_enum.EE_UserAdded:
+                        libEDK.EE_DataAcquisitionEnable(self.userID,True)
+                        self.readytocollect = True
+                if self.readytocollect==True:
+                    #print("ready")
+                    if first_iter:
+                        #print("Now", time.time())
+##                        while not self.nSamplesTaken[0]!=512:
+##                            time.sleep(1)
+##                            libEDK.EE_DataUpdateHandle(0, self.hData)
+                        libEDK.EE_DataGetNumberOfSample(self.hData,self.nSamplesTaken)
+                            
+                        #print(self.nSamplesTaken[0], time.time())
+                        if self.nSamplesTaken[0]!=0:
                             self.nSam=self.nSamplesTaken[0]
                             arr=(c_double*512)()
                             libEDK.EE_DataGetNumberOfSample(self.hData,self.nSamplesTaken)
@@ -265,7 +358,7 @@ class EEG_Processer:
             stuff4=abs(20*numpy.log(stuff2))
             stuff5=tuple(stuff4[0])
             j[i].append(stuff5)
-            time.sleep(16/128)
+            #time.sleep(16/128)
         q2.send(j)
         while True:
             
@@ -292,7 +385,7 @@ class EEG_Processer:
                 stuff4=abs(20*numpy.log(stuff2))
                 stuff5=tuple(stuff4[0])
                 j[i].append(stuff5)
-                time.sleep(16/128)
+                #time.sleep(16/128)
             #if len(j["FC5"])==st:
             q2.send(j)
             for i in j.keys():
