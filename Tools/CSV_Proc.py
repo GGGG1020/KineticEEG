@@ -44,7 +44,6 @@ class CSVProc:
            counter+=1
         while True:
             try:
-                inittime=time.time()
                 artree=PreprocessUtils.highpass(tree)
                 win32=numpy.hanning(512)
                 artree=numpy.array(artree)
@@ -54,11 +53,9 @@ class CSVProc:
                 stuff5=tuple(stuff4[0])
                 retlist.append(stuff5)   
                 goodlist.append(stuff5)
-                ##print(len(tree))
                 del tree[0:16]
                 more16=a.get16more(sensor)
                 tree+=more16
-                #time.sleep((0.125-(time.time()-inittime)))
                 counter+=(0.125)
             except:
                 return retlist

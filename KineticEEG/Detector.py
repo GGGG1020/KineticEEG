@@ -1,5 +1,13 @@
 import ClassifyUtils
-import copy
+import statistics
+import sys
+sys.path.append("C:/Users/Gaurav/Documents/GitHub/KineticEEG/")
+from SLICERZ import Area
+
+
+"""
+A little documentation needed here.
+Here is the detector.It recieves live data from the processer and checks for an EEG MU desync. It will then spawn another process/invoke a function to do classification"""
 class SensorDetection:
     
     def __init__(self, dict1, sensor):
@@ -94,7 +102,63 @@ class AverageBasedDetector:
                     break
                 else:
                     points1=0
-        return [bool((points/4)>0.5)]
+        return [(points/4)]
+class DesynchronisationDetector:
+    def __init__(self):
+        self.data_tree=list()
+        self.baseline=float()
+        self.accept=None
+    def calibrate(self, data):
+        self.baseline=statistics.mean(data)
+        self.accept=Area(self.baseline,statistics.stdev(data))
+    def detect(self,data, uname=DetectionEvent(0,0)):
+        prev=data[0]
+        detects=[]
+        detectb=False
+        count=0
+        pending=0
+        for i in data:
+            if count==0:count+=1;continue
+            elif (i-prev)<0 and not detectb:detectb=True;pending=count;print("Pending @"+str(pending)+"\t"+str(data[count]))
+            elif(i-prev)<0 and detectb and not i in self.accept:detectb=False;print("Detected @"+str(pending)+"\t"+str(data[count]));detects.append(DetectionEvent(2, pending))
+            elif (i-prev)>=0 and detectb and not i in self.accept:detectb=False;print("Cancelled @"+str(pending)+"\t"+str(data[count]))
+            count+=1
+        if detects:
+            return [True]+detects
+        else:
+            return [False]
+class ClassifyPackage:
+    
+class DesyncDetectionApp:
+    def streamandqueuefriendly(self, dataInterface):
+        """Data interface is a stream, queue, or file. Anything that can be read from. Additionally it is important that one supply a get method which will hand out samples"""
+        while not datainterface.empty():
+            j=datainterface.get()
+                if self.detect[0]==True:
+                    
+                    
+                    
+            
+            
+class DataInterface:
+    pass
+        
+        
+        
+        
+        
+        
+class DesyncTester:
+    def __init__(self):
+        self.Detector=DesynchronisationDetector()
+        self.data=eval(input("Put the data in list format:   "))
+    def run(self):
+        self.Detector.calibrate(self.data)
+        self.Detector.detect(self.data)
+if __name__=='__main__':
+    a=DesyncTester()
+    a.run()
+    print(a.data)
     
                 
                     
