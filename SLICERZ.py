@@ -81,14 +81,14 @@ class RunThroughClassifier:
             return (statistics.mean(dat)-low25)+statistics.mean(dat)
         else:
             return statistics.mean(dat)-(high75-statistics.mean(dat))
-    def enhance_results_special(self, dat):
-        low25=numpy.percentile(dat, 25)
-        high75=numpy.percentile(dat, 75)
-        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
-            dat.append(float(max(dat)+(statistics.mean(dat)-low25)))
-        else:
-            dat.append(float(min(dat)-(high75-statistics.mean(dat))))
-        return statistics.mean(dat)
+##    def enhance_results_special(self, dat):
+##        low25=numpy.percentile(dat, 25)
+##        high75=numpy.percentile(dat, 75)
+##        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
+##            dat.append(float(max(dat)+(statistics.mean(dat)-low25)))
+##        else:
+##            dat.append(float(min(dat)-(high75-statistics.mean(dat))))
+##        return statistics.mean(dat)
     def test_classifiers(self, frozen, indx, indx1):
         toret=list()
         for i in self.myclassifs:

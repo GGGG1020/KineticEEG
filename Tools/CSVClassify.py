@@ -7,6 +7,8 @@ import CSV_Proc
 import statistics
 import SLICERZ
 import math
+##import mscvrt
+
 
 
 class TryClassifier:
@@ -25,19 +27,23 @@ class TryClassifier:
         
 if __name__=="__main__":
     import sys
-    
-    c=TryClassifier("C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV","C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV")
-    g=[0,0,0,0]
-    for i in range(4, 133):
-        j=c.train_and_run(tuple((8*(28-4), 8*(30-4))), tuple((8*(i-4), 8*(i-2))), ["F3", "F4", "T7","T8"],["Mu"]) #89-91
-        g.append(j)
-    co=0
-    for p in g:
-        #print(str(p)+"/t"+str(co))
-        if p==0:
+    try:
+        c=TryClassifier("C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV","C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV")
+        g=[0,0,0,0]
+        for i in range(4, 133):
+            j=c.train_and_run(tuple((8*(29-4), 8*(31-4))), tuple((8*(i-4), 8*(i-2))), ["F3", "F4", "T7","T8"],["Mu"]) #89-91
+            g.append(j)
+        co=0
+        for p in g:
+            print(str(p*g[co+1])+"/t"+str(co))
+##            if p==0:
+##                co+=1
+##                continue
+            #print(str(abs((statistics.mean([p*g[co+1]]))))+"/t"+str(co)) #/abs((statistics.stdev([p, g[co+1]]))))))
+            #print(str(p)+"/t"+str(co)) #/abs((statistics.stdev([p, g[co+1]]))))))
             co+=1
-            continue
-        print(str(((p*g[co+1])/math.tanh(abs(p-g[co+1]))))+"/t"+str(co))
-        co+=1
-    #c.train_and_run(tuple((8*(62-4), 8*(64-4))), tuple((8*(89-4), 8*(91-4))), [ "T7",
-                                                                               #"T8", "F3", "F4"],["Mu"]) #89-91
+        #c.train_and_run(tuple((8*(62-4), 8*(64-4))), tuple((8*(89-4), 8*(91-4))), [ "T7",
+                                                                                   #"T8", "F3", "F4"],["Mu"]) #89-91
+    except:
+        input("Click to exit")
+
