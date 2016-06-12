@@ -7,6 +7,7 @@ import CSV_Proc
 import statistics
 import SLICERZ
 import math
+import time
 ##import mscvrt
 
 
@@ -30,6 +31,16 @@ if __name__=="__main__":
     try:
         c=TryClassifier("C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV","C:/Users/Gaurav/Desktop/Gaurav_TIMED_4-4-13.03.16.15.57.05.CSV")
         g=[0,0,0,0]
+        def timeloop(c):
+            t=time.time()
+            j=c.train_and_run(tuple((8*(29-4), 8*(31-4))), tuple((8*(37-4), 8*(39-2))), ["F3", "F4", "T7","T8"],["Mu"])
+            print("Difference in t"+str(time.time()-t))
+
+            print(j)
+        timeloop(c)
+        
+    except:pass
+    code="""
         for i in range(4, 133):
             j=c.train_and_run(tuple((8*(29-4), 8*(31-4))), tuple((8*(i-4), 8*(i-2))), ["F3", "F4", "T7","T8"],["Mu"]) #89-91
             g.append(j)
@@ -46,4 +57,4 @@ if __name__=="__main__":
                                                                                    #"T8", "F3", "F4"],["Mu"]) #89-91
     except:
         input("Click to exit")
-
+        """

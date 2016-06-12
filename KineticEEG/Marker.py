@@ -67,6 +67,7 @@ if __name__=='__main__':
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     myApp=MarkerApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/gauravArm.csv", "w"))
+    
     myApp.registerMarker("kick", 60)
     myApp.registerMarker("Arm", 120)
     print("registered")

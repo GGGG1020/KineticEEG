@@ -3,6 +3,8 @@ import tkinter
 import math
 import numpy
 import matplotlib.pyplot as plt
+global SENSOROFINTEREST
+SENSOROFINTEREST=["F3", "F4", "T7","T8"]
 class Modulator:
     def __init__(self):
         self.register_and_potentiate=list()
@@ -21,6 +23,96 @@ class Modulator:
         for  i in self.register_and_potentiate:
             pass
             #todo/t self.feature_present_or_not(data,
+class LiveRunClassifier:
+    def __init__(self):
+        self.data=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        self.myclassifs={}
+        for i in SENSOROFINTEREST:
+            self.myclassifs[i]=Classifier()
+    def enhance_results(self, data):
+        penalize_by=0
+        promote_by=0
+        for i in data:
+            if i <= 0.6:
+                penalize_by+=0.1
+            elif i>=0.8:
+                promote_by+=0.1
+        am=statistics.mean(data)
+        am+=promote_by
+        am-=penalize_by
+        return am
+    def enhance_results(self, data):
+        data1=list()
+        percent=1
+        me=float()
+        percent2=1
+        for i in data:
+            if i <= 0.6:
+                percent+=((0.6-i)/float(statistics.mean(data)))
+                #penalize_by+=0.1
+            elif i>=0.8: 
+                percent2+=((i-0.8)/float(statistics.mean(data)))
+                #data1.append(i)
+        me=statistics.mean(data)
+        me-=percent
+        me+=percent2
+        return me
+    def enhance_results(self, data):
+        data1=list()
+        penalize_by=0
+        promote_by=0
+        g=Area(statistics.mean(data), statistics.stdev(data))
+        for i in data:
+            if not i in g and (i< statistics.mean(data)):
+                penalize_by+=((statistics.mean(data)-statistics.stdev(data))-i)/float(statistics.mean(data))
+            
+            elif not i in g and (i>statistics.mean(data)):
+                promote_by+=(i-(statistics.mean(data)-statistics.stdev(data)))/float(statistics.mean(data))
+
+        me=statistics.median(data)
+        me=penalize_by
+        me*=promote_by
+        return me
+    def run_train(self,data):
+        """Just give a dictionary that follows:
+                 {"FC5":[s1,s2,s3,s4...sN], ....}
+                 """
+        for i in self.myclassifs:
+            self.myclassifs[i].train(data[i])
+    def enhance_results_special(self, dat):
+        low25=numpy.percentile(dat, 25)
+        high75=numpy.percentile(dat, 75)
+        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
+            return (statistics.mean(dat)-low25)+statistics.mean(dat)
+        else:
+            return statistics.mean(dat)-(high75-statistics.mean(dat))
+##    def enhance_results_special(self, dat):
+##        low25=numpy.percentile(dat, 25)
+##        high75=numpy.percentile(dat, 75)
+##        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
+##            dat.append(float(max(dat)+(statistics.mean(dat)-low25)))
+##        else:
+##            dat.append(float(min(dat)-(high75-statistics.mean(dat))))
+##        return statistics.mean(dat)
+    def test_classifiers(self, frozen, indx, indx1):
+        toret=list()
+        for i in self.myclassifs:
+            toret.append(self.myclassifs[i].classify(frozen[i][2][indx:indx1])[1])
+        root=tkinter.Tk()
+        root.title("SLICERZ Monitor")
+        #label=tkinter.Label(text=statistics.mean((toret)))
+        label=tkinter.Label(text=self.enhance_results(toret))
+        label.pack()
+    def test_classifiers_ret(self, frozen):
+        toret=list()
+        for i in self.myclassifs:
+            toret.append(self.myclassifs[i].classify(frozen[i])[1])
+        #root=tkinter.Tk()
+        #root.title("SLICERZ Monitor")
+        #label=tkinter.Label(text=statistics.mean((toret)))
+        #label=tkinter.Label(text=self.enhance_results(toret))
+        #label.pack()
+        return self.enhance_results_special(toret)   
 class RunThroughClassifier:
     def __init__(self, frozen):
         self.data=frozen
@@ -107,10 +199,7 @@ class RunThroughClassifier:
         #label=tkinter.Label(text=statistics.mean((toret)))
         #label=tkinter.Label(text=self.enhance_results(toret))
         #label.pack()
-        return self.enhance_results_special(toret)
-        
-        
-            
+        return self.enhance_results_special(toret)   
 class Slope:
     def __init__(self, location, dire):
         self.loc=location
@@ -147,7 +236,6 @@ class Feature:
     def __hash__(self):
         """I am implementing this in order to allow Features to be dict keys"""
         return hash(tuple((self.loc, self.lo)))
-
 class Trainer:
     def __init__(self, dataoutline, secondordermodel):
         self.secondorder=secondordermodel
@@ -164,13 +252,13 @@ class Trainer:
         myl=self.tag_both(self.dat.outline, outline.outline)
         self.calculate_adjustment(myl)
     def calculate_adjustment(self, arg):
-        print("whole"+str(arg))
+        #print("whole"+str(arg))
         for i in arg:
-            print("arg"+str(arg[i]))
+            ##print("arg"+str(arg[i]))
             for j in arg[i]:
                 weight_factor=(self.len-j[1])/self.len
-                print(weight_factor)
-                print(self.dat.outline)
+                #print(weight_factor)
+               # print(self.dat.outline)
                 myindx=self.dat.outline.index(i)
                 if type(j[0]) is Feature:
                     self.dat.outline[myindx].loc=numpy.average([self.dat.outline[myindx].loc, j[0].loc], weights=[1,weight_factor])
@@ -183,7 +271,6 @@ class Trainer:
                     self.dat.outline[myindx].dire=numpy.average([self.dat.outline[myindx].dire, j[0].dire], weights=[1,weight_factor])
                     print("Slope after: \t"+str(self.dat.outline[myindx]))
                     #self.secondorder.add(j[0])
-                    
     def weighted_average_of_two_arrays(self,avg1, avg2, weighted=[2,1]):
         toreturn=list()
         for i in range(len(avg2)-1):
@@ -235,7 +322,7 @@ class Trainer:
         del j[0]
         del j[len(j)-1]
         for i in j:
-            print(i.location)
+            #print(i.location)
             if i.location<2:
                 final_list.append(Feature(i.location, statistics.mean(dre[i.location-1:i.location+3])))
             else:
@@ -247,12 +334,10 @@ class Trainer:
             else:return [0]*len(myoutline)
             dis=len(othertmpft)-abs(i.loc-l.loc)
             penalize_by=dis/len(othertmpft)
-            print(penalize_by)
+            #print(penalize_by)
             sendback.append(statistics.mean([penalize_by, self.t(abs(i.lo-l.lo))]))
-        print(sendback)
+        #print(sendback)
         return sendback    
-        
-        
 class Classifier:
     def __init__(self):
         self.train1=[]
@@ -260,9 +345,8 @@ class Classifier:
         self.finder=FeatureFinder()
         deftolerance=self.finder.train(data)
         tree=self.finder.scan_data(data)
-        print(tree)
+        #print(tree)
         self.a=Modulator()
-        
         self.outline=DataOutline(tree, data, self.a)
         self.outline.scan()
     def classify(self, data):
@@ -288,7 +372,7 @@ class ClassifierTester:
         #g.train(self.dat1)
         #print(g.scan_data(self.dat1))
         self.classif.train(self.dat)
-        print(self.classif.classify(self.dat1))
+        #print(self.classif.classify(self.dat1))
         ##self.train()
     def train(self):
         b=Trainer(self.classif.outline, Modulator())
@@ -321,8 +405,6 @@ class DataOutline:
             buildlist2.append(j.loc)
         for i in buildlist1:
             pass
-        
-            
     def __process(self, data):
         liz=difference_list(data)
         degs=[math.degrees(math.atan(i)) for i in liz]
@@ -363,7 +445,7 @@ class DataOutline:
         del j[0]
         del j[len(j)-1]
         for i in j:
-            print(i.location)
+            #print(i.location)
             if i.location<2:
                 final_list.append(Feature(i.location, statistics.mean(dre[i.location-1:i.location+3])))
             else:
@@ -375,10 +457,10 @@ class DataOutline:
             else:return [0]*len(self.outline)
             dis=len(othertmpft)-abs(i.loc-l.loc)
             penalize_by=dis/len(othertmpft)
-            print(penalize_by)
+            #print(penalize_by)
             sendback.append(statistics.mean([penalize_by, self.t(abs(i.lo-l.lo))]))
-        print(sendback)
-        print("I am features1")
+      #  print(sendback)
+        #print("I am features1")
         return self.find_outliar(sendback)            
     def features_present(self, othertmpft):
 
@@ -397,7 +479,7 @@ class DataOutline:
            important=processed[currindx-self.ihatethis:currindx+self.ihatethis]
        #    print(len(important))
            sendback.append(self.t(abs(statistics.mean(important)-i.lo)))           
-       print(sendback)
+       #print(sendback)
        return sendback
     def find_outliar(self, data):
         if not len(data)>=2: myarea=Area(data, 0)
@@ -407,7 +489,7 @@ class DataOutline:
         ge=list()
         rep=list()
         present=self.features_present1(data)
-        print(present)
+        #print(present)
         count=0
         lim=0
         def t(x):
@@ -421,7 +503,7 @@ class DataOutline:
       #  print(ge)
         ge=filter(lambda x:bool(not len(x)==0), ge)
         ge=list(ge)
-        print(ge)
+        #print(ge)
         #print(self.outline)
         sumo=0
         slopes=filter(lambda x:bool(type(x)==Slope),self.outline)
@@ -430,7 +512,7 @@ class DataOutline:
         ind=[]
         for i in range(len(ge)):
             curr=ge[i]
-            print(slopes)
+            #print(slopes)
             currcomp=slopes[i]
             su=0
             for r in curr:
@@ -440,7 +522,7 @@ class DataOutline:
             medianthis.append(i)
         #print(medianthis)
         #print(self.find_outliar(medianthis))
-        print("######################################"+str([statistics.mean(medianthis),statistics.median(medianthis)]))
+        #print("######################################"+str([statistics.mean(medianthis),statistics.median(medianthis)]))
         return list([statistics.mean(medianthis),statistics.median(medianthis)])
 ##        print(ge)
 ##        print(self.outline)
@@ -487,19 +569,17 @@ class FeatureFinder:
         #Here, we initialize values for the ff
         mylin=self.__process(trainer)
         #print(mylin)
-        print("\n\n out"+str(mylin))
+        #print("\n\n out"+str(mylin))
         a=list(filter(lambda x:bool(x>=numpy.percentile(mylin,75)), mylin))
         self.similarity_percentage_area=Area(statistics.median(mylin), statistics.variance(mylin))
-        print((statistics.median_grouped(mylin),  statistics.variance(mylin)))
-        print(self.similarity_percentage_area)
+        #print((statistics.median_grouped(mylin),  statistics.variance(mylin)))
+        #print(self.similarity_percentage_area)
         self.similarity_percentage_area.maxy=1.0 #100 will work.
         return self.similarity_percentage_area
-
-    
     def __process(self, data):
-        print("In"+str(data))
+        #print("In"+str(data))
         liz=difference_list(data)
-        print("liz"+str(liz))
+        #print("liz"+str(liz))
         degs=[math.degrees(math.atan(i)) for i in liz]
         #print(degs)
         def t(x):
@@ -507,7 +587,7 @@ class FeatureFinder:
             if angles<0:
                 angles=angles=1.0-((180-x)*(0.5/45))
             return angles
-        print("Hi"+str([t(abs(degs[i+1]-degs[i])) for i in range(len(degs)-1)]))
+        #print("Hi"+str([t(abs(degs[i+1]-degs[i])) for i in range(len(degs)-1)]))
         return [t(abs(degs[i+1]-degs[i])) for i in range(len(degs)-1)]
     
     def scan_data(self, data):
@@ -518,22 +598,22 @@ class FeatureFinder:
         feature_watch=bool(False)
         for i in bh:
             if feature_watch and(i in self.similarity_percentage_area or i>previous) :
-                print("Feature", count)
-                print("Remember:", data[count])
+                #print("Feature", count)
+                #print("Remember:", data[count])
                 j.append(TempFeature(count,data))
                 feature_watch=False
                 count+=1
                 continue
             elif feature_watch and  (not i in self.similarity_percentage_area  or i<previous):
-                print("Outliar", count)
-                print("Remember:", data[count])
+                #print("Outliar", count)
+                #print("Remember:", data[count])
                # data[count]=statistics.mean(data[count-2:count+2])
                 feature_watch=False
                 count+=1
                 continue
             elif not i in self.similarity_percentage_area and not feature_watch:
                 feature_watch=True
-                print('feature watch',count)
+              #  print('feature watch',count)
                 count+=1
                 previous=i
                 continue
@@ -570,7 +650,7 @@ class FeatureTester:
                      99.88353380337247, 99.65276313158463, 99.20857016079242, 98.5202096519103, 97.58587741736116,
                      96.41784563807974, 95.04112717584547,
                      93.50302041301316, 91.884516870911, 90.31773467696574])
-        print(j)
+      #  print(j)
         rt=DataOutline(j, self.data)
         self.g=rt.scan()
         print(self.g)

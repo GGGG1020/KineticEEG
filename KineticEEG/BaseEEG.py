@@ -44,15 +44,16 @@ class EmotivDataGetter:
     ED_SYNC_SIGNAL=24
     def __init__(self):
             #q.put("Hi")
-            self.targetChannelList = [EmotivDataGetter.ED_COUNTER,EmotivDataGetter.ED_AF3, EmotivDataGetter.ED_F7,EmotivDataGetter.ED_F3, EmotivDataGetter.ED_FC5, EmotivDataGetter.ED_T7,
-                                      EmotivDataGetter.ED_P7, EmotivDataGetter.ED_O1, EmotivDataGetter.ED_O2, EmotivDataGetter.ED_P8,EmotivDataGetter.ED_T8,EmotivDataGetter.ED_FC6, EmotivDataGetter.ED_F4,
-                                      EmotivDataGetter.ED_F8,EmotivDataGetter.ED_AF4, EmotivDataGetter.ED_GYROX, EmotivDataGetter.ED_GYROY, EmotivDataGetter.ED_TIMESTAMP, EmotivDataGetter.ED_FUNC_ID,
+            self.targetChannelList = [EmotivDataGetter.ED_COUNTER,EmotivDataGetter.ED_INTERPOLATED,
+                                        EmotivDataGetter.ED_RAW_CQ,EmotivDataGetter.ED_AF3, EmotivDataGetter.ED_F7,EmotivDataGetter.ED_F3, EmotivDataGetter.ED_FC5, EmotivDataGetter.ED_T7,
+                                    EmotivDataGetter.ED_P7, EmotivDataGetter.ED_O1, EmotivDataGetter.ED_O2, EmotivDataGetter.ED_P8,EmotivDataGetter.ED_T8,EmotivDataGetter.ED_FC6, EmotivDataGetter.ED_F4,
+                                   EmotivDataGetter.ED_F8,EmotivDataGetter.ED_AF4, EmotivDataGetter.ED_GYROX, EmotivDataGetter.ED_GYROY, EmotivDataGetter.ED_TIMESTAMP, EmotivDataGetter.ED_FUNC_ID,
                                    EmotivDataGetter.ED_FUNC_VALUE, EmotivDataGetter.ED_MARKER, EmotivDataGetter.ED_SYNC_SIGNAL]
-            self.targetChannelList = [EmotivDataGetter.ED_AF3, EmotivDataGetter.ED_F7,EmotivDataGetter.ED_F3, EmotivDataGetter.ED_FC5, EmotivDataGetter.ED_T7,
-                                      EmotivDataGetter.ED_P7, EmotivDataGetter.ED_O1, EmotivDataGetter.ED_O2, EmotivDataGetter.ED_P8,EmotivDataGetter.ED_T8,EmotivDataGetter.ED_FC6, EmotivDataGetter.ED_F4,
-                                      EmotivDataGetter.ED_F8,EmotivDataGetter.ED_AF4]
+##            self.targetChannelList = [EmotivDataGetter.ED_AF3, EmotivDataGetter.ED_F7,EmotivDataGetter.ED_F3, EmotivDataGetter.ED_FC5, EmotivDataGetter.ED_T7,
+##                                      EmotivDataGetter.ED_P7, EmotivDataGetter.ED_O1, EmotivDataGetter.ED_O2, EmotivDataGetter.ED_P8,EmotivDataGetter.ED_T8,EmotivDataGetter.ED_FC6, EmotivDataGetter.ED_F4,
+##                                      EmotivDataGetter.ED_F8,EmotivDataGetter.ED_AF4]
             self.header = ['COUNTER','AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4','GYROX', 'GYROY', 'TIMESTAMP','FUNC_ID', 'FUNC_VALUE', 'MARKER', 'SYNC_SIGNAL']
-            self.sens=['AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4']
+            self.sens=['c','int', 'cq', 'AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4']
             self.eEvent=libEDK.EE_EmoEngineEventCreate()
             self.eState= libEDK.EE_EmoStateCreate()
             #print("Hi")
@@ -163,9 +164,9 @@ class EmotivDataGetter:
                             data = array('d')
                             useless=list(self.sens)
                             for sampleIdx in range(self.nSamplesTaken[0]): 
-                                for i in self.sens:
-                                    libEDK.EE_DataGet(self.hData,useless.index(i),byref(arr), self.nSam)
-                                    self.dct1[i].append(arr[sampleIdx])
+                                for i in range(3, 17):
+                                    libEDK.EE_DataGet(self.hData,i,byref(arr), self.nSam)
+                                    self.dct1[self.sens[i]].append(arr[sampleIdx])
                                 if len(self.dct1["FC5"])==512:
                                     q.send(self.dct1)
                                    # eefe=open("C:/Users/Gaurav/Desktop/gatherside.txt", "w")
@@ -392,9 +393,7 @@ class EEG_Processer:
                 j[i]=[]
 
     
-if __name__=='__main__':
-    a=EmotivDataGetter()
-    a.test_non_parallel()
+
         
                         
     
