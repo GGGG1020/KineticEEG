@@ -231,17 +231,18 @@ class MultiLiveClassifierApplication:
                     #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
-                    #if (countr%4)==0:
-                    self.classq.send(data_dict)
-                    res=self.classq.recv()
-                    #p=multiprocessing.Pool()
-                    
-                   # res=map(classify_func,res)
-                    #print(list(res))
-                    res1=list(res)
-                    print (len(res1))
-                    if max(res, key=lambda x:x[1])[1]>=0.85 and not max(res, key=lambda x:x[1])[0]=="neutral":
-                         print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
+                    if (countr%4)==0:
+                         self.classq.send(data_dict)
+                         res=self.classq.recv()
+                         #p=multiprocessing.Pool()
+                         
+                        # res=map(classify_func,res)
+                         #print(list(res))
+                         res1=list(res)
+                         print (len(res1))
+                         if max(res, key=lambda x:x[1])[1]>=0.85 and not max(res, key=lambda x:x[1])[0]=="neutral":
+                              print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
+                         countr+=1
                     #countr=0
                     #print(data_dict)
                     
