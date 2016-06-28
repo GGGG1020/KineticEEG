@@ -1,5 +1,6 @@
 ###Marker.py
 import BaseEEG
+import math
 import multiprocessing
 import tkinter
 import ctypes
@@ -9,6 +10,9 @@ sys.path.append("C:/Users/Gaurav/Documents/GitHub/KineticEEG/")
 import SLICERZ
 import pickle
 kernel=ctypes.windll.kernel32
+import PyWinMouse
+a=PyWinMouse.Mouse()
+
 ##
 ##class GUIBuild:
 ##    def __init__(self):
@@ -67,6 +71,8 @@ class MultiLiveTrainingDataGatherer:
                     print(time.asctime())
                  #a#   self.system_up_time+=16/128
             except:
+                for i in range(32):
+                     self.q.recv()
                 print("Train Done")
                 
                # raise
@@ -105,7 +111,7 @@ class LiveTrainingDataGatherer:
                     first=False
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
-                if len(data_dict["F3"])==24:
+                if len(data_dict["F3"])==16:
                     for i in data_dict:
                         del data_dict[i][0]
                     #print(self.livedataclass.test_classifiers_ret(data_dict))
@@ -227,21 +233,28 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==32:
-                    #print("In Detector")
+                if len(data_dict["F3"])==32:                   #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
-                    if (countr%4)==0:
+                    if (countr%6)==0:
                          self.classq.send(data_dict)
                          res=self.classq.recv()
                          #p=multiprocessing.Pool()
-                         
+                         #a.move_mouse(a.get_mouse_pos()[0], a.get_mouse_pos()[1]+2)
                         # res=map(classify_func,res)
                          #print(list(res))
                          res1=list(res)
                          print (len(res1))
-                         if max(res, key=lambda x:x[1])[1]>=0.85 and not max(res, key=lambda x:x[1])[0]=="neutral":
+                         if max(res, key=lambda x:x[1])[1]>=0.80 and not max(res, key=lambda x:x[1])[0]=="neutral":
+                              percent=max(res, key=lambda x:x[1])[1]
+                              percent=(percent-0.8)
                               print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
+                              if max(res, key=lambda x:x[1])[0]=="kick":
+                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(60*percent*100)))
+                              else:
+                                    a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(60*percent*100)))
+                                   
+                                   
                          countr+=1
                     #countr=0
                     #print(data_dict)
@@ -284,7 +297,7 @@ class MultiLiveClassifierApplication:
                     #print(list(res))
                     res1=list(res)
                     print (len(res1))
-                    if max(res, key=lambda x:x[1])[1]>=0.85 and not max(res, key=lambda x:x[1])[0]=="neutral":
+                    if max(res, key=lambda x:x[1])[1]>=0.80 and not max(res, key=lambda x:x[1])[0]=="neutral":
                          print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
                     #countr=0
                     #print(data_dict)
@@ -340,8 +353,8 @@ if __name__=='__main__':
 ##    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
 ##    myApp.runApp()
      try:
-         MultiDataGather()
-         MultiRunApp()
+          MultiDataGather()
+          MultiRunApp()
      except Exception as e:
           print(e)
           input()
