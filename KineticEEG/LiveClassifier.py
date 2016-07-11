@@ -5,6 +5,7 @@ import multiprocessing
 import tkinter
 import ctypes
 import time
+import statistics
 import sys
 sys.path.append("C:/Users/Gaurav/Documents/GitHub/KineticEEG/")
 import SLICERZ
@@ -23,6 +24,16 @@ a=PyWinMouse.Mouse()
 ##        self.button1.pack()
 ##        self.button2=tkinter.Button(self.a, text="Launch Main", command=RunApp)
 ##        self.button2.pack()
+def highpass(signal):
+    iir_tc=0.98
+    background=signal[0]
+    hp=list()
+    hp.append(0)
+    for i in range(1, len(signal)):
+        signal[i]=float(signal[i])
+        background=(iir_tc*background)+(1-iir_tc)*signal[i]
+        hp.append(signal[i]-background)
+    return hp
 class MultiLiveTrainingDataGatherer:
      def __init__(self, process1,process2,q,dumpto, qevents):
         self.getter=process1
@@ -61,7 +72,7 @@ class MultiLiveTrainingDataGatherer:
                         first=False
                     for i in data_dict[tp]:
                         data_dict[tp][i].append(data[i][0][2])
-                    if len(data_dict[tp]["F3"])==32:
+                    if len(data_dict[tp]["F3"])==64:
                         for i in data_dict[tp]:
                             del data_dict[tp][i][0]
                         #print(self.livedataclass.test_classifiers_ret(data_dict))
@@ -209,7 +220,133 @@ class MultiLiveClassifierApplication:
             curr_class.run_train(self.dict_data[i])
             self.classifiers[i]=curr_class
         self.processer=process2
+        self.thresh,self.d=self.calculate_thresh()
+        print("#####THRESHOLD="+str(self.thresh))
         self.system_up_time=0
+    def calculate_thresh(self):
+          thresh_select=list()
+          for i in self.dict_data:
+               for j in self.classifiers:
+                    if not j==i:
+                         thresh_select.append(self.classifiers[j].test_classifiers_ret(self.dict_data[i]))
+          return (max(thresh_select), sorted(thresh_select)[-1]-sorted(thresh_select)[-2])
+    def normalized(self, tt):
+        return statistics.mean(tt)#*(1-statistics.stdev(tt))
+    def runAppSubprocessedDiffAlgo(self):
+        self.getter.start()
+        getpid=self.getter.pid
+        procget=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(getpid))
+        kernel.SetPriorityClass(procget, 0x0100)
+        self.classproc.start()
+        classpid=self.getter.pid
+        proclass=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(classpid))
+        kernel.SetPriorityClass(proclass, 0x0100)
+        self.processer.start()
+        procpid=self.processer.pid
+        procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
+        kernel.SetPriorityClass(procproc, 0x0100)
+        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        countr=0
+        switch_countr=0
+        switch=False
+        average_q={"kick":[self.thresh], "arm":[self.thresh], "neutral":[self.thresh]}
+        running_q={"kick":[], "arm":[], "neutral":[]}
+        print("Enter Loop")
+        try:
+            while self.getter.is_alive():
+                data=self.q.recv()
+                #print(data)
+                for i in data_dict:
+                    data_dict[i].append(data[i][0][2])
+                countr=countr+1
+                if len(data_dict["F3"])==64:                   #print("In Detector")
+                    for i in data_dict:
+                        del data_dict[i][0]
+                    if (countr%6)==0:
+                         self.classq.send(data_dict)
+                         res=self.classq.recv()
+                         print("recv...")
+                         #p=multiprocessing.Pool()
+                         #a.move_mouse(a.get_mouse_pos()[0], a.get_mouse_pos()[1]+2)
+                        # res=map(classify_func,res)
+                         #print(list(res))
+                         res1=list(res)
+                         #print (len(res1))
+                         #print(res)
+                         for i in res:
+                              average_q[i[0]].append(i[1])
+                              #print("Here1")
+                              if len(running_q[i[0]])==1:
+                                   #print("Hi")
+                                   del running_q[i[0]][0]
+                              running_q[i[0]].append(i[1])
+                         final_list=list()
+                         if len(running_q["arm"])<1:continue
+                         for i in running_q:
+                             curr_avg=self.normalized(running_q[i])
+                             if curr_avg>self.thresh:
+                                 final_list.append(tuple((i, curr_avg)))
+                                 
+                         
+##                         final_list=list()
+##                         for i in average_q:
+##                              
+##                              #print("Here3")
+##                              if not highpass(running_q[i])[-1] in curr_ar and highpass(running_q[i])[-1]>curr_ar.miny:
+##                                   final_list.append(tuple((i,highpass(running_q[i])[-1])))
+                         if len(final_list)==0:
+                              #print("Here4")
+                              continue
+                         if not switch_countr==3 and switch==True:
+                             switch_countr+=1
+                             continue
+                         if switch_countr==3 and switch ==True:
+                            switch_countr=0
+                            switch=False
+                            continue
+                         if len(final_list)==1:
+                              percent=final_list[0][1]
+                              #print("Here5")
+                              #percent=abs(percent-statistics.mean(average_q[final_list[0][0]]))
+                              percent=abs(percent-self.thresh)
+                              #print(str(max(res, key=lambda x:x[1])[0])+str(sorted(res, key=lambda x:x[1])[-1][1]-sorted(res, key=lambda x:x[1])[-2][1])+str("\n"))
+                              if max(res, key=lambda x:x[1])[0]=="kick":
+                                   switch=True
+                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(abs(percent*100*60))))
+                                   print("Kick"+str(percent))
+                              else:
+                                    switch=True
+                                    print("arm"+str(percent))
+                                    a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(abs(percent*100*60))))
+                         else:
+                              maxy=max(final_list, key=lambda x:x[1])
+                              percent=final_list[0][1]
+                              percent=abs(percent-self.thresh)
+                              #percent=abs(float(maxy[1])-float(statistics.mean(float(average_q[maxy[0]]))))
+                              if maxy[0]=="kick":
+                                   switch=True
+                                   print("kick"+str(percent))
+                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(abs(percent*100*60))))
+                              else:
+                                  switch=True
+                                  print("arm"+str(percent))
+                                  a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(abs(percent*100*60))))
+                         
+                              #if max(res, key=lambda x:x[1])[1]>=0.825 and not max(res, key=lambda x:x[1])[0]=="neutral" and (sorted(res, key=lambda x:x[1])[-1][1]-sorted(res, key=lambda x:x[1])[-2][1])>self.d:
+
+                                   
+                                   
+                         countr+=1
+                    #countr=0
+                    #print(data_dict)
+                    
+                #print(time.time())
+                self.system_up_time+=16/128
+        except:
+            self.getter.terminate()
+            self.classproc.terminate()
+            self.processer.terminate()
+            raise
 
     def runAppSubprocessed(self):
         self.getter.start()
@@ -226,6 +363,11 @@ class MultiLiveClassifierApplication:
         kernel.SetPriorityClass(procproc, 0x0100)
         data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
         countr=0
+        switch_countr=0
+        switch=False
+        average_q={"kick":[self.thresh], "arm":[self.thresh], "neutral":[self.thresh]}
+        running_q={"kick":[], "arm":[], "neutral":[]}
+        print("Enter Loop")
         try:
             while self.getter.is_alive():
                 data=self.q.recv()
@@ -233,7 +375,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==32:                   #print("In Detector")
+                if len(data_dict["F3"])==64:                   #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
                     if (countr%6)==0:
@@ -244,22 +386,72 @@ class MultiLiveClassifierApplication:
                         # res=map(classify_func,res)
                          #print(list(res))
                          res1=list(res)
-                         print (len(res1))
-                         if max(res, key=lambda x:x[1])[1]>=0.80 and not max(res, key=lambda x:x[1])[0]=="neutral":
-                              percent=max(res, key=lambda x:x[1])[1]
-                              percent=(percent-0.8)
-                              print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
-                              if max(res, key=lambda x:x[1])[0]=="kick":
-                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(60*percent*100)))
+                         #print (len(res1))
+                         #print(res)
+                         for i in res:
+                              average_q[i[0]].append(i[1])
+                              #print("Here1")
+                              if len(running_q[i[0]])==6:
+                                   #print("Hi")
+                                   del running_q[i[0]][0]
+                              running_q[i[0]].append(i[1])
+                         #print("Here2")
+                         final_list=list()
+                         for i in average_q:
+                              if len(average_q[i])<=1:
+                                   curr_ar=SLICERZ.Area(highpass(average_q[i])[-1], 0)
                               else:
-                                    a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(60*percent*100)))
+                                   curr_ar=SLICERZ.Area(highpass(average_q[i])[-1], 1*statistics.stdev(highpass(average_q[i])))
+                              #print("Here3")
+                              if not highpass(running_q[i])[-1] in curr_ar and highpass(running_q[i])[-1]>curr_ar.miny:
+                                   final_list.append(tuple((i,highpass(running_q[i])[-1])))
+                         if len(final_list)==0:
+                              #print("Here4")
+                              continue
+                         if not switch_countr==3 and switch==True:
+                             switch_countr+=1
+                             continue
+                         if switch_countr==3 and switch ==True:
+                            switch_countr=0
+                            switch=False
+                            continue
+                         if len(final_list)==1:
+                              percent=final_list[0][1]
+                              #print("Here5")
+                              #percent=abs(percent-statistics.mean(average_q[final_list[0][0]]))
+                              percent=abs(percent-highpass(average_q[final_list[0][0]])[-1])
+                              #print(str(max(res, key=lambda x:x[1])[0])+str(sorted(res, key=lambda x:x[1])[-1][1]-sorted(res, key=lambda x:x[1])[-2][1])+str("\n"))
+                              if max(res, key=lambda x:x[1])[0]=="kick":
+                                   switch=True
+                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(abs(percent*100*60))))
+                                   print("Kick"+str(percent))
+                              else:
+                                    switch=True
+                                    print("arm"+str(percent))
+                                    a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(abs(percent*100*60))))
+                         else:
+                              maxy=max(final_list, key=lambda x:x[1])
+                              percent=final_list[0][1]
+                              percent=abs(percent-highpass(average_q[final_list[0][0]])[-1])
+                              #percent=abs(float(maxy[1])-float(statistics.mean(float(average_q[maxy[0]]))))
+                              if maxy[0]=="kick":
+                                   switch=True
+                                   print("kick"+str(percent))
+                                   a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]+(abs(percent*100*60))))
+                              else:
+                                  switch=True
+                                  print("arm"+str(percent))
+                                  a.move_mouse(a.get_mouse_pos()[0], int(a.get_mouse_pos()[1]-(abs(percent*100*60))))
+                         
+                              #if max(res, key=lambda x:x[1])[1]>=0.825 and not max(res, key=lambda x:x[1])[0]=="neutral" and (sorted(res, key=lambda x:x[1])[-1][1]-sorted(res, key=lambda x:x[1])[-2][1])>self.d:
+
                                    
                                    
                          countr+=1
                     #countr=0
                     #print(data_dict)
                     
-                print(time.time())
+                #print(time.time())
                 self.system_up_time+=16/128
         except:
             self.getter.terminate()
@@ -297,7 +489,7 @@ class MultiLiveClassifierApplication:
                     #print(list(res))
                     res1=list(res)
                     print (len(res1))
-                    if max(res, key=lambda x:x[1])[1]>=0.80 and not max(res, key=lambda x:x[1])[0]=="neutral":
+                    if max(res, key=lambda x:x[1])[1]>=0.85 and not max(res, key=lambda x:x[1])[0]=="neutral":
                          print(str(max(res, key=lambda x:x[1])[0])+str(max(res, key=lambda x:x[1])))
                     #countr=0
                     #print(data_dict)
@@ -314,7 +506,7 @@ def DataGather():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
-    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
+    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"))
     print("Move")
     myApp.runApp()
 def RunApp():    
@@ -323,7 +515,7 @@ def RunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     print("Start")
-    myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
+    myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runApp()
 def MultiDataGather():
@@ -332,7 +524,7 @@ def MultiDataGather():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
-    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"),["kick", "arm","neutral"])
+    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),["kick", "arm","neutral"])
     #print("Move")
     myApp.runApp()
 def MultiRunApp():
@@ -341,7 +533,7 @@ def MultiRunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #print("Start")
-    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
+    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runAppSubprocessed()
 if __name__=='__main__':
@@ -354,6 +546,7 @@ if __name__=='__main__':
 ##    myApp.runApp()
      try:
           MultiDataGather()
+          print("Start Session")
           MultiRunApp()
      except Exception as e:
           print(e)
