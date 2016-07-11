@@ -119,6 +119,7 @@ class RunThroughClassifier:
         self.myclassifs={}
         for i in self.data:
             self.myclassifs[i]=Classifier()
+        
     def enhance_results(self, data):
         penalize_by=0
         promote_by=0
