@@ -1,4 +1,8 @@
+
+
+
 import ctypes
+
 import sys
 import os
 import tkinter
@@ -394,7 +398,8 @@ class EEG_Processer:
 
     
 
-        
+__version__=1.0
+__author__="Gaurav Ghosal"        
                         
     
 
