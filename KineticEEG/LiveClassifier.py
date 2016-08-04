@@ -1,5 +1,6 @@
 ###Marker.py
-import BaseEEG
+import BaseEEG,numpy
+import tkinter 
 import math
 import multiprocessing
 import tkinter
@@ -13,17 +14,6 @@ import pickle
 kernel=ctypes.windll.kernel32
 import PyWinMouse
 a=PyWinMouse.Mouse()
-
-##
-##class GUIBuild:
-##    def __init__(self):
-##        self.a=tkinter.Tk()
-##        self.a.title("EmoSoft")
-##        self.a.geometry("500x500")
-##        self.button1=tkinter.Button(self.a, text="Train", command=DataGather)
-##        self.button1.pack()
-##        self.button2=tkinter.Button(self.a, text="Launch Main", command=RunApp)
-##        self.button2.pack()
 def highpass(signal):
     iir_tc=0.98
     background=signal[0]
@@ -72,7 +62,7 @@ class MultiLiveTrainingDataGatherer:
                         first=False
                     for i in data_dict[tp]:
                         data_dict[tp][i].append(data[i][0][2])
-                    if len(data_dict[tp]["F3"])==64:
+                    if len(data_dict[tp]["F3"])==24:
                         for i in data_dict[tp]:
                             del data_dict[tp][i][0]
                         #print(self.livedataclass.test_classifiers_ret(data_dict))
@@ -89,7 +79,7 @@ class MultiLiveTrainingDataGatherer:
                # raise
         self.getter.terminate()
         self.processer.terminate()
-        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb")
+        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
         fileobj.write(pickle.dumps(data_dict))
         fileobj.close()
         
@@ -133,7 +123,7 @@ class LiveTrainingDataGatherer:
         except:
             self.getter.terminate()
             self.processer.terminate()
-            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb")
+            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
             fileobj.write(pickle.dumps(data_dict))
             fileobj.close()
             print("Train Done")
@@ -162,7 +152,7 @@ class LiveClassifierApplication:
                 #print(data)
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
-                if len(data_dict["F3"])==24:
+                if len(data_dict["F3"])==32:
                     for i in data_dict:
                         del data_dict[i][0]
                     jj=self.livedataclass.test_classifiers_ret(data_dict)
@@ -239,6 +229,7 @@ class MultiLiveClassifierApplication:
         kernel.SetPriorityClass(procget, 0x0100)
         self.classproc.start()
         classpid=self.getter.pid
+        self.thresh=0.825
         proclass=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(classpid))
         kernel.SetPriorityClass(proclass, 0x0100)
         self.processer.start()
@@ -259,10 +250,10 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==64:                   #print("In Detector")
+                if len(data_dict["F3"])==24:                   #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
-                    if (countr%6)==0:
+                    if (countr%3)==0:
                          self.classq.send(data_dict)
                          res=self.classq.recv()
                          print("recv...")
@@ -276,14 +267,15 @@ class MultiLiveClassifierApplication:
                          for i in res:
                               average_q[i[0]].append(i[1])
                               #print("Here1")
-                              if len(running_q[i[0]])==1:
+                              if len(running_q[i[0]])==3:
                                    #print("Hi")
                                    del running_q[i[0]][0]
                               running_q[i[0]].append(i[1])
                          final_list=list()
-                         if len(running_q["arm"])<1:continue
+                         if len(running_q["arm"])<3:continue
                          for i in running_q:
-                             curr_avg=self.normalized(running_q[i])
+                             #print(running_q[i])
+                             curr_avg=numpy.average(running_q[i], weights=[1,4,9])
                              if curr_avg>self.thresh:
                                  final_list.append(tuple((i, curr_avg)))
                                  
@@ -375,10 +367,10 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==64:                   #print("In Detector")
+                if len(data_dict["F3"])==32:                   #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
-                    if (countr%6)==0:
+                    if (countr%4)==0:
                          self.classq.send(data_dict)
                          res=self.classq.recv()
                          #p=multiprocessing.Pool()
@@ -391,7 +383,7 @@ class MultiLiveClassifierApplication:
                          for i in res:
                               average_q[i[0]].append(i[1])
                               #print("Here1")
-                              if len(running_q[i[0]])==6:
+                              if len(running_q[i[0]])==3:
                                    #print("Hi")
                                    del running_q[i[0]][0]
                               running_q[i[0]].append(i[1])
@@ -477,7 +469,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==16:
+                if len(data_dict["F3"])==64:
                     #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
@@ -535,7 +527,20 @@ def MultiRunApp():
     #print("Start")
     myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
-    myApp.runAppSubprocessed()
+    myApp.runAppSubprocessedDiffAlgo()
+class GUIBuild:
+    def __init__(self):
+        self.a=tkinter.Tk()
+        self.a.title("EmoSoft")
+        self.a.geometry("500x500")
+        self.button1=tkinter.Button(self.a, text="Train", command=MultiDataGather)
+        self.button1.pack()
+        self.button2=tkinter.Button(self.a, text="Launch Main", command=lambda:self.execute)
+        self.button2.pack()
+    def execute(self):
+        self.a.destroy()
+        MultiRunApp()
+        
 if __name__=='__main__':
 ##    q,q1=multiprocessing.Pipe()
 ##    getter=multiprocessing.Process(target=BaseEEG.run_data_getter_processer, args=(q1,))
@@ -544,10 +549,12 @@ if __name__=='__main__':
 ##    #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
 ##    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
 ##    myApp.runApp()
+##    GUIBuild()
      try:
-          MultiDataGather()
-          print("Start Session")
-          MultiRunApp()
+         if ctypes.windll.user32.MessageBoxA(0, "Use old training?", "KineticEEG Training System", 0x00000004)==6:
+              MultiDataGather()
+         print("Start Session")
+         MultiRunApp()
      except Exception as e:
           print(e)
           input()
