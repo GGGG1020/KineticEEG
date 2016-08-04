@@ -23,6 +23,96 @@ class Modulator:
         for  i in self.register_and_potentiate:
             pass
             #todo/t self.feature_present_or_not(data,
+class UniformInterfaceLiveRunClassifier:
+    def __init__(self):
+        self.data=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        self.myclassifs={}
+        for i in SENSOROFINTEREST:
+            self.myclassifs[i]=Classifier()
+    def enhance_results(self, data):
+        penalize_by=0
+        promote_by=0
+        for i in data:
+            if i <= 0.6:
+                penalize_by+=0.1
+            elif i>=0.8:
+                promote_by+=0.1
+        am=statistics.mean(data)
+        am+=promote_by
+        am-=penalize_by
+        return am
+    def enhance_results(self, data):
+        data1=list()
+        percent=1
+        me=float()
+        percent2=1
+        for i in data:
+            if i <= 0.6:
+                percent+=((0.6-i)/float(statistics.mean(data)))
+                #penalize_by+=0.1
+            elif i>=0.8: 
+                percent2+=((i-0.8)/float(statistics.mean(data)))
+                #data1.append(i)
+        me=statistics.mean(data)
+        me-=percent
+        me+=percent2
+        return me
+    def enhance_results(self, data):
+        data1=list()
+        penalize_by=0
+        promote_by=0
+        g=Area(statistics.mean(data), statistics.stdev(data))
+        for i in data:
+            if not i in g and (i< statistics.mean(data)):
+                penalize_by+=((statistics.mean(data)-statistics.stdev(data))-i)/float(statistics.mean(data))
+            
+            elif not i in g and (i>statistics.mean(data)):
+                promote_by+=(i-(statistics.mean(data)-statistics.stdev(data)))/float(statistics.mean(data))
+
+        me=statistics.median(data)
+        me=penalize_by
+        me*=promote_by
+        return me
+    def train(self,data):
+        """Just give a dictionary that follows:
+                 {"FC5":[s1,s2,s3,s4...sN], ....}
+                 """
+        for i in self.myclassifs:
+            self.myclassifs[i].train(data[i])
+    def enhance_results_special(self, dat):
+        low25=numpy.percentile(dat, 25)
+        high75=numpy.percentile(dat, 75)
+        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
+            return (statistics.mean(dat)-low25)+statistics.mean(dat)
+        else:
+            return statistics.mean(dat)-(high75-statistics.mean(dat))
+##    def enhance_results_special(self, dat):
+##        low25=numpy.percentile(dat, 25)
+##        high75=numpy.percentile(dat, 75)
+##        if ((statistics.mean(dat)-low25)>(high75-statistics.mean(dat))):
+##            dat.append(float(max(dat)+(statistics.mean(dat)-low25)))
+##        else:
+##            dat.append(float(min(dat)-(high75-statistics.mean(dat))))
+##        return statistics.mean(dat)
+    def test_classifiers(self, frozen, indx, indx1):
+        toret=list()
+        for i in self.myclassifs:
+            toret.append(self.myclassifs[i].classify(frozen[i][2][indx:indx1])[1])
+        root=tkinter.Tk()
+        root.title("SLICERZ Monitor")
+        #label=tkinter.Label(text=statistics.mean((toret)))
+        label=tkinter.Label(text=self.enhance_results(toret))
+        label.pack()
+    def classify(self, frozen):
+        toret=list()
+        for i in self.myclassifs:
+            toret.append(self.myclassifs[i].classify(frozen[i])[1])
+        #root=tkinter.Tk()
+        #root.title("SLICERZ Monitor")
+        #label=tkinter.Label(text=statistics.mean((toret)))
+        #label=tkinter.Label(text=self.enhance_results(toret))
+        #label.pack()
+        return self.enhance_results_special(toret)   
 class LiveRunClassifier:
     def __init__(self):
         self.data=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
@@ -215,6 +305,8 @@ class Slope:
     def __hash__(self):
         """I am implementing this in order to allow slopes to be dict keys"""
         return hash(tuple((self.loc, self.dire)))
+    def tupelize(self):
+        return tuple((self.loc,self.dire))
 class TrainingNotCompatible(Exception):
     pass
 class TempFeature:
@@ -237,6 +329,8 @@ class Feature:
     def __hash__(self):
         """I am implementing this in order to allow Features to be dict keys"""
         return hash(tuple((self.loc, self.lo)))
+    def tupelize(self):
+        return tuple((self.loc, self.lo))
 class Trainer:
     def __init__(self, dataoutline, secondordermodel):
         self.secondorder=secondordermodel
@@ -385,8 +479,14 @@ class DataOutline:
         self.mod=modulator
         self.download=download
         self.data=data
-        for i in range(len(download)-1):
-            self.listy.append(data[download[i].location:download[i+1].location])
+        if download:
+            for i in range(len(download)-1):
+                self.listy.append(data[download[i].location:download[i+1].location])
+    @classmethod
+    def from_feature_set(cls, ftrset):
+        ret_cls=cls(None, None)
+        ret_cls.outline=ftrset
+        return ret_cls
     def absolute_similarity(self, data, ref):
         liz=difference_list(data)
         degs=[math.degrees(math.atan(i)) for i in liz]
