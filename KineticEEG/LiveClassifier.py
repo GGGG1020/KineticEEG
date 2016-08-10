@@ -244,6 +244,7 @@ class MultiLiveClassifierApplication:
         running_q={"kick":[], "arm":[], "neutral":[]}
         print("Enter Loop")
         try:
+            print("in")
             while self.getter.is_alive():
                 data=self.q.recv()
                 #print(data)
@@ -256,7 +257,7 @@ class MultiLiveClassifierApplication:
                     if (countr%3)==0:
                          self.classq.send(data_dict)
                          res=self.classq.recv()
-                         print("recv...")
+                         #print("recv...")
                          #p=multiprocessing.Pool()
                          #a.move_mouse(a.get_mouse_pos()[0], a.get_mouse_pos()[1]+2)
                         # res=map(classify_func,res)
