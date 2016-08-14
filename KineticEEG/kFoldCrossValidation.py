@@ -8,6 +8,7 @@ import SLICERZ
 import statistics
 import PolyFitClassifier
 import BaseEEG
+import matplotlib.pyplot as plt
 import multiprocessing
 import math
 import random
@@ -39,6 +40,7 @@ class kFoldCrossValidationGatherer:
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
         data_dict=dict()
+        count=0
         for i in range(self.times):
             for p in self.events:
                 data_dict[p]={"F3":[], "F4":[], "T7":[], "T8":[]}
@@ -48,6 +50,7 @@ class kFoldCrossValidationGatherer:
                 print(tp)
                 #time.sleep(1)
                 first=bool(True)
+                count+=1
                 
                 try:
                     while self.getter.is_alive():
@@ -72,12 +75,17 @@ class kFoldCrossValidationGatherer:
                         print(time.asctime())
                      #a#   self.system_up_time+=16/128
                 except:
+                    if not count==3:
+                        continue
                     #print(e)
-                    for l in data_dict:
-                        self.collection[l].append(Sample(l,data_dict[i]))
-                    for po in range(32):
-                         self.q.recv()
-                    print("Train Done")
+            print(data_dict)
+            count=0
+            for l in data_dict:
+                self.collection[l].append(Sample(l,data_dict[l]))
+                print("J")
+            for po in range(32):
+                 self.q.recv()
+            print("Train Done")
                     
                    # raise
 
@@ -89,14 +97,15 @@ class kFoldCrossValidationGatherer:
 class NonConformingInterface(Exception):
     pass
 class kFoldCrossValidationRunner2:
-    def __init__(self, k, classify, actions=["arm", "kick", "neutral"], parsefunc=None):
+    def __init__(self, k, classify,degree,actions=["arm", "kick", "neutral"], parsefunc=None):
         self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Gaurav1.kineegxval", "rb")
         self.dat=pickle.loads(self.fileobj.read())
-        for i in self.dat:
-            for j in range(len(self.dat[i])):
-                for t in self.dat[i][j]:
-                    if t.data==self.dat[self.dat[i][j].index(j)+1].data:
-                        del self.dat[i][j][self.dat[self.dat[i][j].index(j)+1]]
+        self.deg=degree
+        ##for i in self.dat:
+            ##for j in range(len(self.dat[i])):
+                ##for t in self.dat[i][j]:
+                    ##if t.data==self.dat[self.dat[i][j].index(j)+1].data:
+                        ##del self.dat[i][j][self.dat[self.dat[i][j].index(j)+1]]
             
                                  
         self.k=k
@@ -118,7 +127,7 @@ class kFoldCrossValidationRunner2:
             classlist={}
             right=0
             total=0
-            temp=self.classify(15)
+            temp=self.classify(17)
             traindict={}
             #for i  in self.actions:
                 #traindict[i]=random.sample(self.dat[i], 1)[0].data
@@ -165,7 +174,7 @@ class kFoldCrossValidationRunner2:
             classlist={}
             right=0
             total=0
-            self.temp=self.classify(17)
+            self.temp=self.classify(self.deg)
             traindict={}
             #for i  in self.actions:
                 #traindict[i]=random.sample(self.dat[i], 1)[0].data
@@ -306,12 +315,41 @@ def DataGather():
     myApp=kFoldCrossValidationGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),6)
     myApp.runApp()                
 if __name__=='__main__':
-    #DataGather()
+    DataGather()
     listy=[]
-    for i in range(1):
-        valrunner=kFoldCrossValidationRunner2(100, PolyFitClassifier.PolyBasedClassifier)
-        listy.append(valrunner.run())
-    print(statistics.mean(listy))
+    res=[]
+    for i in range(21):
+        valrunner=kFoldCrossValidationRunner2(100, PolyFitClassifier.PolyBasedClassifier, i)
+        pl=valrunner.run()
+        print(pl)
+        um=0
+    
+        for p in listy:
+            um+=p[0]
+
+        res.append([i,pl])
+    for i in res:
+        print(i[0], i[1][0])
+    plt.plot([tt[1][0] for tt in res])
+    plt.show()
+    listy=[]
+##    for i in range(52):
+##        valrunner=kFoldCrossValidationRunner2(100, PolyFitClassifier.PolyBasedClassifier)
+##        listy.append(valrunner.run())
+##    print(statistics.mean(listy))
+    
+##    listy=[]       
+##    for i in range(100):
+##        valrunner=kFoldCrossValidationRunner(2, SLICERZ.UniformInterfaceLiveRunClassifier)
+##        listy.append(valrunner.run2())
+##    um=0
+##    
+##    for i in listy:
+##        um+=i[0]
+##
+##    print(um/200)
+	
+
     
                 
                 
