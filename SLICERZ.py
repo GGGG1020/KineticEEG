@@ -443,7 +443,9 @@ class Classifier:
         #print(tree)
         self.a=Modulator()
         self.outline=DataOutline(tree, data, self.a)
+        
         self.outline.scan()
+        #print(len(self.outline.outline))
     def classify(self, data):
         return self.outline.runit(data)
 class ClassifierTester:
