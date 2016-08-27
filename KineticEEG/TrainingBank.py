@@ -614,11 +614,11 @@ def ReduxMultiDataGather():
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
     myApp=FeatureReduxMultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata64dims.kineegtr", "wb"),
-                                                    ["kick", "arm","neutral"],5)
+                                                    ["kick", "arm","neutral"],6)
     #print("Move")
     myApp.runApp()            
 if __name__=='__main__':
-    #ReduxMultiDataGather()
+    ReduxMultiDataGather()
     ReduxMultiRunApp()
     
     #sMultiDataGather()

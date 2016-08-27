@@ -15,6 +15,7 @@ import random
 import time
 import ctypes
 import pickle
+import csv
 kernel=ctypes.windll.kernel32
 class Sample:
     def __init__(self, label, data):
@@ -75,6 +76,8 @@ class kFoldCrossValidationGatherer:
                         print(time.asctime())
                      #a#   self.system_up_time+=16/128
                 except:
+                    for po in range(32):
+                         self.q.recv()
                     if not count==3:
                         continue
                     #print(e)
@@ -83,8 +86,7 @@ class kFoldCrossValidationGatherer:
             for l in data_dict:
                 self.collection[l].append(Sample(l,data_dict[l]))
                 print("J")
-            for po in range(32):
-                 self.q.recv()
+
             print("Train Done")
                     
                    # raise
@@ -316,6 +318,8 @@ def DataGather():
     myApp.runApp()                
 if __name__=='__main__':
     DataGather()
+    outputFile = open('C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/CrossValx{0}.csv'.format(time.time()), 'w', newline='')
+    outputWriter = csv.writer(outputFile)
     listy=[]
     res=[]
     for i in range(21):
@@ -329,14 +333,18 @@ if __name__=='__main__':
 
         res.append([i,pl])
     for i in res:
-        print(i[0], i[1][0])
+        print([i[0], i[1][0]])
+        outputWriter.writerow([i[0], i[1][0]])
+
+    outputFile.close()
     plt.plot([tt[1][0] for tt in res])
     plt.show()
-    listy=[]
-##    for i in range(52):
-##        valrunner=kFoldCrossValidationRunner2(100, PolyFitClassifier.PolyBasedClassifier)
+    
+##    listy=[]
+##    for i in range(100):
+##        valrunner=kFoldCrossValidationRunner2(2, PolyFitClassifier.PolyBasedClassifier,17)
 ##        listy.append(valrunner.run())
-##    print(statistics.mean(listy))
+    
     
 ##    listy=[]       
 ##    for i in range(100):

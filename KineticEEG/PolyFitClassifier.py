@@ -8,6 +8,10 @@ import ctypes
 import time
 import pickle
 kernel=ctypes.windll.kernel32
+class Sample:
+    def __init__(self, label, data):
+        self.data=data
+        self.label=label
 class PolyBasedClassifier:
     def __init__(self,degree, actions=["arm", "kick", "neutral"]):
         self.mat={}
@@ -50,9 +54,15 @@ class MultiLiveClassifierApplication:
             #curr_class=SLICERZ.LiveRunClassifier()
             #curr_class.run_train(self.dict_data[i])
             #self.classifiers[i]=curr_class
-        self.classif=PolyBasedClassifier(15)
-        self.classif.train(self.dict_data)
+        unpacked=list()
+        for b in self.dict_data:
+            unpacked+=self.dict_data[b]
+        self.classif=PolyBasedClassifier(17)
+        for q in self.dict_data:
+            self.classif.train(self.dict_data[q])
         self.processer=process2
+        for j in unpacked:
+            self.classif.train({j.label: j.data})
         #self.thresh,self.d=self.calculate_thresh()
         #print("#####THRESHOLD="+str(self.thresh))
         self.system_up_time=0
@@ -339,10 +349,11 @@ class MultiLiveClassifierApplication:
             raise
     
 class MultiLiveTrainingDataGatherer:
-     def __init__(self, process1,process2,q,dumpto, qevents):
+     def __init__(self, process1,process2,q,dumpto, qevents,k):
         self.getter=process1
         self.q=q
         self.events=qevents
+        self.k=k
         self.processer=process2
      def runApp(self):
         self.getter.start()
@@ -353,50 +364,63 @@ class MultiLiveTrainingDataGatherer:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
+        sampslist=dict()
         data_dict=dict()
-        for i in self.events:
-            data_dict[i]={"F3":[], "F4":[], "T7":[], "T8":[]}
-        
-        for tp in data_dict:
+        count=0
+        for k in range(self.k):
+            for i in self.events:
+                data_dict[i]={"F3":[], "F4":[], "T7":[], "T8":[]}
             
-            print(tp)
-            #time.sleep(1)
-            first=bool(True)
-            
-            try:
-                while self.getter.is_alive():
-                    #print(data_dict)
-                    #print(data_dict[tp])
-                    data=self.q.recv()
-                    if first:
-                        
-                        #print(tp)
-                        #time.sleep(1)
-                        data=self.q.recv()
-                        first=False
-                    for i in data_dict[tp]:
-                        data_dict[tp][i].append(data[i][0][2])
-                    if len(data_dict[tp]["F3"])==24:
-                        for i in data_dict[tp]:
-                            del data_dict[tp][i][0]
-                        #print(self.livedataclass.test_classifiers_ret(data_dict))
-                        raise KeyboardInterrupt
-                    
-                        
-                    print(time.asctime())
-                 #a#   self.system_up_time+=16/128
-            except:
-                for i in range(32):
-                     self.q.recv()
-                print("Train Done")
+            for tp in data_dict:
                 
-               # raise
-        self.getter.terminate()
-        self.processer.terminate()
-        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
-        fileobj.write(pickle.dumps(data_dict))
-        fileobj.close()
+                print(tp)
+                #time.sleep(1)
+                first=bool(True)
+                
+                try:
+                    while self.getter.is_alive():
+                        #print(data_dict)
+                        #print(data_dict[tp])
+                        data=self.q.recv()
+                        if first:
+                            
+                            #print(tp)
+                            #time.sleep(1)
+                            data=self.q.recv()
+                            first=False
+                        for i in data_dict[tp]:
+                            data_dict[tp][i].append(data[i][0][2])
+                        if len(data_dict[tp]["F3"])==24:
+                            for i in data_dict[tp]:
+                                del data_dict[tp][i][0]
+                            #print(self.livedataclass.test_classifiers_ret(data_dict))
+                            raise KeyboardInterrupt
                         
+                            
+                        print(time.asctime())
+                     #a#   self.system_up_time+=16/128
+                except:
+                    for i in range(32):
+                         self.q.recv()
+                    if not count==3:
+                        continue
+            count=0
+            for pl in data_dict:
+                sampslist[pl].append(Sample(pl, data_dict[pl]))
+                print("j")
+            print("Train Done")
+                
+                    
+                    
+                    ###print("Train Done")
+                    
+                   # raise
+            self.getter.terminate()
+            self.processer.terminate()
+            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
+            fileobj.write(pickle.dumps(sampslist))
+            fileobj.close()
+                            
             
             
 def MultiDataGather():
@@ -405,7 +429,7 @@ def MultiDataGather():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
-    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),["kick", "arm","neutral"])
+    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),["kick", "arm","neutral"],6)
     #print("Move")
     myApp.runApp()
 def MultiRunApp():
