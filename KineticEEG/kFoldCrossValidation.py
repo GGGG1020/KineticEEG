@@ -1,4 +1,3 @@
-#kFoldCrossValidation.py
 import sys
 sys.path.append("C:/Users/Gaurav/My Documents/GitHub/KineticEEG/KineticEEG")
 sys.path.append("C:/Users/Gaurav/My Documents/GitHub/KineticEEG/Tools")
@@ -6,7 +5,7 @@ sys.path.append("C:/Users/Gaurav/My Documents/GitHub/KineticEEG")
 import CSV_Proc
 import SLICERZ
 import statistics
-import PolyFitClassifier
+import PolyFit as PolyFitClassifier
 import BaseEEG
 import matplotlib.pyplot as plt
 import multiprocessing
@@ -158,7 +157,7 @@ class kFoldCrossValidationRunner2:
                 count+=1
                 #print(right, total
                 print(temp.classify(p.data), p.label)
-                if temp.classify(p.data)[0]==p.label:
+                if temp.classify(p.data).lower()==p.label:
                 
                     right+=1
                 total+=1
@@ -207,7 +206,7 @@ class kFoldCrossValidationRunner2:
                 count+=1
                 #print(right, total
             print(self.temp.classify(ransam.data), ransam.label)
-            if self.temp.classify(ransam.data)[0]==ransam.label:
+            if self.temp.classify(ransam.data).lower()==ransam.label:
                 
                 right+=1
             total+=1
@@ -215,7 +214,7 @@ class kFoldCrossValidationRunner2:
         return [len(list(filter(lambda x:x==1, reslist))),errors]
 class kFoldCrossValidationRunner:
     def __init__(self, k, classify, actions=["arm", "kick", "neutral"], parsefunc=None):
-        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Gaurav1.kineegxval", "rb")
+        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Gaurav1.kineegxval.kineegxval", "rb")
         self.dat=pickle.loads(self.fileobj.read())
         self.k=k
         self.classify=classify
@@ -317,13 +316,13 @@ def DataGather():
     myApp=kFoldCrossValidationGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),6)
     myApp.runApp()                
 if __name__=='__main__':
-    DataGather()
-    outputFile = open('C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/CrossValx{0}.csv'.format(time.time()), 'w', newline='')
+    #DataGather()
+    outputFile = open('C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/CrossValx{0}.csv'.format(time.asctime().replace(":", " ")), 'w', newline='')
     outputWriter = csv.writer(outputFile)
     listy=[]
     res=[]
     for i in range(21):
-        valrunner=kFoldCrossValidationRunner2(100, PolyFitClassifier.PolyBasedClassifier, i)
+        valrunner=kFoldCrossValidationRunner2(18, PolyFitClassifier.PolyBasedClassifier, i)
         pl=valrunner.run()
         print(pl)
         um=0

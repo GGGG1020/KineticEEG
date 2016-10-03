@@ -41,7 +41,7 @@ class MultiLiveTrainingDataGatherer:
         kernel.SetPriorityClass(procproc, 0x0100)
         data_dict=dict()
         for i in self.events:
-            data_dict[i]={"F3":[], "F4":[], "T7":[], "T8":[]}
+            data_dict[i]={"F3":[], "F4":[], "FC5":[], "FC6":[]}
         
         for tp in data_dict:
             
@@ -79,7 +79,7 @@ class MultiLiveTrainingDataGatherer:
                # raise
         self.getter.terminate()
         self.processer.terminate()
-        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
+        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "wb")
         fileobj.write(pickle.dumps(data_dict))
         fileobj.close()
         
@@ -97,7 +97,7 @@ class LiveTrainingDataGatherer:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
             
         print("Move1")
         first=bool(True)
@@ -123,7 +123,7 @@ class LiveTrainingDataGatherer:
         except:
             self.getter.terminate()
             self.processer.terminate()
-            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
+            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "wb")
             fileobj.write(pickle.dumps(data_dict))
             fileobj.close()
             print("Train Done")
@@ -145,7 +145,7 @@ class LiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         try:
             while self.getter.is_alive():
                 data=self.q.recv()
@@ -236,7 +236,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         switch_countr=0
         switch=False
@@ -354,7 +354,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         switch_countr=0
         switch=False
@@ -461,7 +461,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         try:
             while self.getter.is_alive():
@@ -499,7 +499,7 @@ def DataGather():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
-    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"))
+    myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "wb"))
     print("Move")
     myApp.runApp()
 def RunApp():    
@@ -508,7 +508,7 @@ def RunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     print("Start")
-    myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
+    myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runApp()
 def MultiDataGather():
@@ -517,7 +517,7 @@ def MultiDataGather():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #myApp=LiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "rb"))
-    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb"),["kick", "arm","neutral"])
+    myApp=MultiLiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "wb"),["kick", "arm","neutral"])
     #print("Move")
     myApp.runApp()
 def MultiRunApp():
@@ -526,7 +526,7 @@ def MultiRunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #print("Start")
-    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
+    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Livetr.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runAppSubprocessedDiffAlgo()
 class GUIBuild:

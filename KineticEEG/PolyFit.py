@@ -4,7 +4,9 @@ import numpy.polynomial as poly
 import ClassifyUtils
 import multiprocessing
 import BaseEEG
+import statistics
 import ctypes
+import statistics
 import time
 import pickle
 kernel=ctypes.windll.kernel32
@@ -12,23 +14,58 @@ class Sample:
     def __init__(self, label, data):
         self.data=data
         self.label=label
+    def euclidean_distance_between(self, other):
+        tote=0
+        for i in self.data:
+            tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
+        return tote
+            
+            
+        
 class PolyBasedClassifier:
     def __init__(self,degree, actions=["arm", "kick", "neutral"]):
         self.mat={}
         self.deg=degree
         self.actions=actions
-        for i in actions:self.mat.update({i:{"F3":[], "F4":[], "T7":[], "T8":[]}})
-    def train(self, data):
+    
+        for i in actions:self.mat.update({i:[]})
+    def train_old(self, data):
+        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "T7":[], "T8":[]}})
         for i in data:
             for j in data[i]:
                 self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
+    def classify_old(self, data):
+        mat2={}
+        for i in data:
+                mat2[i]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i]))), data[i], self.deg))
+        output=self.k_nn_old(mat2)
+        return min(output, key=lambda x:x[1])
+    def train(self, data):
+        for i in data:
+            curr_dat={}
+            for j in data[i]:
+                #self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
+                curr_dat[j]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg))
+            self.mat[i].append(Sample(i, curr_dat))
+                
     def classify(self, data):
         mat2={}
         for i in data:
                 mat2[i]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i]))), data[i], self.deg))
-        output=self.k_nn(mat2)
-        return min(output, key=lambda x:x[1])
-    def k_nn(self, data):
+        data_samp=Sample("", mat2)
+        output=self.k_nn(data_samp)
+        k=4
+        sorts=sorted(output, key=lambda x:x[1], reverse=True)
+        top_k=sorts[0:10]
+        top_k_labels=[j[0] for j in top_k]
+        #print(sorts, "sorts")
+        #print(len(top_k_labels), "Up")
+        try:
+            return statistics.mode(top_k_labels)
+            #print(len(top_k_labels))
+        except:
+            return "neutral"
+    def k_nn_old(self, data):
         pp=[]
         for i in self.mat:
             total=0
@@ -37,6 +74,16 @@ class PolyBasedClassifier:
                     total+=ClassifyUtils.euclideandistance(j.coef, data[m].coef, self.deg)
             pp.append(tuple((i, total)))
         return pp
+    def k_nn(self, data):
+        pp=[]
+        #print(len(self.mat['arm']['F3']),"Mat")
+        for i in self.mat:
+            
+            for m in self.mat[i]:
+                pp.append((i,m.euclidean_distance_between(data)))
+               
+        return pp
+    
 class MultiLiveClassifierApplication:
     def __init__(self, process1, process2, q,  profile,subprocessed=False):
         self.getter=process1
@@ -58,8 +105,8 @@ class MultiLiveClassifierApplication:
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
         self.classif=PolyBasedClassifier(17)
-        for q in self.dict_data:
-            self.classif.train(self.dict_data[q])
+        #for q in self.dict_data:
+           # self.classif.train(self.dict_data[q])
         self.processer=process2
         for j in unpacked:
             self.classif.train({j.label: j.data})
@@ -96,6 +143,7 @@ class MultiLiveClassifierApplication:
         average_q={"kick":[self.thresh], "arm":[self.thresh], "neutral":[self.thresh]}
         running_q={"kick":[], "arm":[], "neutral":[]}
         print("Enter Loop")
+        runloop=[]
         try:
             print("in")
             while self.getter.is_alive():
@@ -107,7 +155,9 @@ class MultiLiveClassifierApplication:
                 if len(data_dict["F3"])==24:                   #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
+                
                     if (countr%1)==0:
+                         #print("Here")
                          #self.classq.send(data_dict)
                          #res=self.classq.recv()
                          #print("recv...")
@@ -116,7 +166,18 @@ class MultiLiveClassifierApplication:
                         # res=map(classify_func,res)
                          #print(list(res))
                          #res1=list(res)
-                         print(self.classif.classify(data_dict))
+                         
+                         runloop.append(self.classif.classify(data_dict))
+                         #countr+=1
+                         #print(countr)
+                    if (countr%4)==0:
+                        
+                        try:
+                            print(statistics.mode(runloop))
+                            
+                        except:
+                            print("Neutral")
+                        runloop=[]
                          #print (len(res1))
                          #print(res)
                          #for i in res:
@@ -183,7 +244,7 @@ class MultiLiveClassifierApplication:
 ##
 ##                                   
                                    
-                         countr+=1
+                         
                     #countr=0
                     #print(data_dict)
                     
@@ -367,6 +428,8 @@ class MultiLiveTrainingDataGatherer:
         sampslist=dict()
         data_dict=dict()
         count=0
+        for i in self.events:
+            sampslist[i]=[]
         for k in range(self.k):
             for i in self.events:
                 data_dict[i]={"F3":[], "F4":[], "T7":[], "T8":[]}
@@ -415,11 +478,11 @@ class MultiLiveTrainingDataGatherer:
                     ###print("Train Done")
                     
                    # raise
-            self.getter.terminate()
-            self.processer.terminate()
-            fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
-            fileobj.write(pickle.dumps(sampslist))
-            fileobj.close()
+        self.getter.terminate()
+        self.processer.terminate()
+        fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
+        fileobj.write(pickle.dumps(sampslist))
+        fileobj.close()
                             
             
             
@@ -444,6 +507,3 @@ def MultiRunApp():
 if __name__=='__main__':
     MultiDataGather()
     MultiRunApp()
-        
-        
-        

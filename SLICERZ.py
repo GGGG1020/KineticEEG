@@ -4,7 +4,7 @@ import math
 import numpy
 import matplotlib.pyplot as plt
 global SENSOROFINTEREST
-SENSOROFINTEREST=["F3", "F4", "T7","T8"]
+SENSOROFINTEREST=["F3", "F4", "FC5","FC6"]
 class Modulator:
     def __init__(self):
         self.register_and_potentiate=list()
@@ -25,7 +25,7 @@ class Modulator:
             #todo/t self.feature_present_or_not(data,
 class UniformInterfaceLiveRunClassifier:
     def __init__(self):
-        self.data=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        self.data=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         self.myclassifs={}
         for i in SENSOROFINTEREST:
             self.myclassifs[i]=Classifier()
