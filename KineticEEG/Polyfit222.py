@@ -5,46 +5,13 @@ import multiprocessing
 import BaseEEG
 import statistics
 import ctypes
+import itertools
 import statistics
 import time
 import pickle
 kernel=ctypes.windll.kernel32
-class Sample:
-    def __init__(self, label, data):
-        self.data=data
-        self.label=label
-    def euclidean_distance_between(self, other):
-        tote=0
-        for i in self.data:
-            tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
-        return tote
-            
-            
-        
-class PolyBasedClassifier:
-    def __init__(self,degree, actions=["arm", "kick", "neutral"]):
-        self.mat={}
-        self.deg=degree
-        self.actions=actions
-        for i in actions:self.mat.update({i:[]})
-        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
-    def train_old(self, data):
-    
-        for i in data:
-            for j in data[i]:
-                self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
-                #self.mat[i][j].append(data[i][j])
 
-        #print(self.mat)
-    def classify_old(self, data):
-        mat2={}
-        for i in data:
-                mat2[i]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i]))), data[i], self.deg))
-                #mat2[i]=data[i]
-        output=self.k_nn_old(mat2)
-        num=abs(sorted(output, key=lambda x:x[1])[0][1]-sorted(output, key=lambda x:x[1])[1][1])
-        return [min(output, key=lambda x:x[1]), num]
-    def train(self, data):
+""""    def train(self, data):
         for i in data:
             curr_dat={}
             for j in data[i]:
@@ -68,7 +35,90 @@ class PolyBasedClassifier:
             return statistics.mode(top_k_labels)
             #print(len(top_k_labels))
         except:
-            return "neutral"
+            return "neutral"""
+class Sample:
+    def __init__(self, label, data):
+        self.data=data
+        self.label=label
+    def euclidean_distance_between(self, other):
+        tote=0
+        for i in self.data:
+            tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
+        return tote
+            
+            
+        
+class PolyBasedClassifier:
+    def __init__(self,degree, actions=["arm", "kick", "neutral"]):
+        self.mat={}
+        self.deg=degree
+        self.actions=actions
+        for i in actions:self.mat.update({i:[]})
+        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+    def train(self, data):
+    
+        for i in data:
+            for j in data[i]:
+                self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
+                #self.mat[i][j].append(data[i][j])
+
+        #print(self.mat)
+                
+    def classify(self, data):
+        mat2={}
+        for i in data:
+                mat2[i]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i]))), data[i], self.deg))
+                #mat2[i]=data[i]
+        output=self.k_nn_old(mat2)
+        num=abs(sorted(output, key=lambda x:x[1])[0][1]-sorted(output, key=lambda x:x[1])[1][1])
+        return [min(output, key=lambda x:x[1]), num]
+    def find_most_clustered(self, data):
+        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
+        mat2={}
+        #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+        throttle={}
+        rule={}
+        for i in ['arm', 'kick', 'neutral']:
+
+            #print(i)
+            
+            for j in self.mat[i]:
+                #print(mat[i][j])
+                initlist=[]
+                for p in itertools.combinations(self.mat[i][j], 2):
+                    #print(str(i+"v"+j))
+                    initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
+                #print(str(i+"v"+j))
+                matp[j].append(statistics.mean(initlist))
+            #for b in matp:
+            minst=min(matp, key=lambda x:statistics.mean(matp[x]))
+            #print(minst)
+            #matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
+            final=list()
+            #rule[minst]=[]
+            for j in self.mat[i][minst]:
+                #print(j)
+                final.append(j)
+            rule[i]={minst:final}
+        for p in data:
+            mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
+        for d in rule:
+            #print(d)
+            for tt in rule[d]:
+                sum1=0
+                for ppp in rule[d][tt]:
+                    sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, ppp.coef,len(ppp.coef))
+                    
+                throttle[d]=sum1
+        return [[min(throttle, key=lambda x:throttle[x])]]
+                
+        
+            
+                
+            
+            
+            
+
     def k_nn_old(self, data):
         pp=[]
         totallist=[]
@@ -81,7 +131,7 @@ class PolyBasedClassifier:
                     totallist.append(ClassifyUtils.euclideandistance(j.coef, data[m].coef, self.deg+1))
                 #totallist.append(0)
                 if 0 in totallist:print("OOps")
-                totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-3*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+3*statistics.stdev(totallist))), totallist))
+                totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-1*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+1*statistics.stdev(totallist))), totallist))
                 
                 
                 total+=sum(totallist)
@@ -117,7 +167,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(17)
+        self.classif=PolyBasedClassifier(2)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -149,7 +199,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         switch_countr=0
         switch=False
@@ -165,11 +215,9 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==24:                   #print("In Detector")
-                    for i in data_dict:
-                        del data_dict[i][0]
-                
-                    if (countr%1)==0:
+                if len(data_dict["F3"])==32:                   #print("In Detector")
+                    
+                    #if (countr%4)==0:
                          #print("Here")
                          #self.classq.send(data_dict)
                          #res=self.classq.recv()
@@ -180,17 +228,21 @@ class MultiLiveClassifierApplication:
                          #print(list(res))
                          #res1=list(res)
                          
-                         runloop.append(self.classif.classify(data_dict))
+                     print(self.classif.find_most_clustered(data_dict)[0][0])
+                     for i in data_dict:
+                        del data_dict[i][0:32]
+                     #time.sleep(1)
+            
                          #countr+=1
                          #print(countr)
-                    if (countr%4)==0:
-                        
-                        try:
-                            print(statistics.mode(runloop))
-                            
-                        except:
-                            print("Neutral")
-                        runloop=[]
+##                    if (countr%4)==0:
+##                        
+##                        try:
+##                            print(statistics.mode(runloop))
+##                            
+##                        except:
+##                            print("Neutral")
+                        #runloop=[]
                          #print (len(res1))
                          #print(res)
                          #for i in res:
@@ -282,7 +334,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         switch_countr=0
         switch=False
@@ -389,7 +441,7 @@ class MultiLiveClassifierApplication:
         procpid=self.processer.pid
         procproc=kernel.OpenProcess(ctypes.c_uint(0x0200|0x0400), ctypes.c_bool(False), ctypes.c_uint(procpid))
         kernel.SetPriorityClass(procproc, 0x0100)
-        data_dict=dict({"F3":[], "F4":[], "T7":[], "T8":[]})
+        data_dict=dict({"F3":[], "F4":[], "FC5":[], "FC6":[]})
         countr=0
         try:
             while self.getter.is_alive():
@@ -398,7 +450,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==64:
+                if len(data_dict["F3"])==32:
                     #print("In Detector")
                     for i in data_dict:
                         del data_dict[i][0]
@@ -445,7 +497,7 @@ class MultiLiveTrainingDataGatherer:
             sampslist[i]=[]
         for k in range(self.k):
             for i in self.events:
-                data_dict[i]={"F3":[], "F4":[], "T7":[], "T8":[]}
+                data_dict[i]={"F3":[], "F4":[], "FC5":[], "FC6":[]}
             
             for tp in data_dict:
                 
@@ -466,7 +518,7 @@ class MultiLiveTrainingDataGatherer:
                             first=False
                         for i in data_dict[tp]:
                             data_dict[tp][i].append(data[i][0][2])
-                        if len(data_dict[tp]["F3"])==24:
+                        if len(data_dict[tp]["F3"])==32:
                             for i in data_dict[tp]:
                                 del data_dict[tp][i][0]
                             #print(self.livedataclass.test_classifiers_ret(data_dict))

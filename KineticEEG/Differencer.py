@@ -67,7 +67,7 @@ if __name__=='__main__':
     f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr", "rb")
     pol=f.read()
     dd=pickle.loads(pol)
-    deg=19
+    deg=5
     data=dd
     actions=['arm', 'kick', 'neutral']
     mat={}
@@ -105,8 +105,9 @@ if __name__=='__main__':
                 initlist.append(ClassifyUtils.euclideandistance(p[0], p[1], len(p[1])))
             #print(str(i+"v"+j))
             matp[j].append(statistics.mean(initlist))
-        for b in matp:
-            print(str(i+j), statistics.mean(matp[b]))
+        #for b in matp:
+        minst=min(matp, key=lambda x:statistics.mean(matp[x]))
+        
             
     
     #for i in matp:

@@ -99,16 +99,16 @@ class NonConformingInterface(Exception):
     pass
 class kFoldCrossValidationRunner2:
     def __init__(self, k, classify,degree,actions=["arm", "kick", "neutral"], parsefunc=None):
-        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr", "rb")
+        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
         self.dat=pickle.loads(self.fileobj.read())
         #print(self.dat['kick'])
         for i in self.dat:
             for j in self.dat[i]:
                 pass
                 #del j.data['FC5']
-                del j.data['FC6']
+                #del j.data['FC6']
                 #del j.data["F4"]
-                del j.data["F3"]
+                #del j.data["F3"]
         #for i in self.dat:
             #for j in self.dat[i]:
                # print(j.data.keys())
@@ -334,7 +334,7 @@ class kFoldCrossValidationRunner2:
         return [len(list(filter(lambda x:x==1, reslist))),errors]
 class kFoldCrossValidationRunner2:
     def __init__(self, k, classify,degree, parsefunc=None):
-        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr", "rb")
+        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
         self.dat=pickle.loads(self.fileobj.read())
         self.actions=["arm", "kick", "neutral"]
         #print(self.dat['kick'])
@@ -362,8 +362,8 @@ class kFoldCrossValidationRunner2:
         test=classify(2)
         
         self.actions=['arm', 'kick', 'neutral']
-        if not hasattr(test, "train") or not hasattr(test, "classify"):
-            raise NonConformingInterface("Not proper classifier")
+        #if not hasattr(test, "train") or not hasattr(test, "classify"):
+            #raise NonConformingInterface("Not proper classifier")
     def run2(self):
         classlist={}
         reslist=list()
@@ -561,7 +561,7 @@ class kFoldCrossValidationRunner2:
                 if True:
                     #print(p)
                     
-                    self.temp.train_old({p.label:p.data})
+                    self.temp.train({p.label:p.data})
 ##            for j in self.temp.mat:
 ##                for i in self.temp.mat[j]:
 ##                    print(len(self.temp.mat[j][i]))
@@ -581,7 +581,9 @@ class kFoldCrossValidationRunner2:
                 #print(right, total
             #print(self.temp.classify(ransam.data), ransam.label)
             #print(self.temp.classify(ransam.data))
-            if self.temp.classify_old(ransam.data)[0][0].lower()==ransam.label:
+            #self.temp.find_most_clustered([])
+            guess=self.temp.find_most_clustered(ransam.data)[0][0] 
+            if guess==ransam.label:
                 #pol1.append(self.temp.classify_old(ransam.data)[0][1])
                 #print("Right")
                 right+=1
