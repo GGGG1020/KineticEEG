@@ -67,7 +67,7 @@ if __name__=='__main__':
     f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr", "rb")
     pol=f.read()
     dd=pickle.loads(pol)
-    deg=5
+    deg=11
     data=dd
     actions=['arm', 'kick', 'neutral']
     mat={}
@@ -77,9 +77,9 @@ if __name__=='__main__':
         for j in data[i]:
             print(j)
             #j.data['FC5']=[0]
-            #j.data['FC6']=[0]
-            #j.data["F4"]=[0]
-            #j.data["F3"]=[0]
+            j.data['FC6']=[0]
+            j.data["F4"]=[0]
+            j.data["F3"]=[0]
     matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
     for i in data:
     #print("Check 1")
@@ -110,9 +110,10 @@ if __name__=='__main__':
         
             
     
-    #for i in matp:
-        #print(i, statistics.mean(matp[i]))
-                #mat[i][q].append(j.data[q])
+##    for i in matp:
+##        for q in matp[i]:
+##            print(i, statistics.mean(matp[i]))
+##            mat[i][q].append(j.data[q])
 ##    for i in ['arm', 'kick','neutral']:
 ##        for j in mat[i]:
 ##            plt.text(3,2,str(i)+str(j))
@@ -120,7 +121,7 @@ if __name__=='__main__':
 ##                plt.plot(ll)
 ##            plt.figure()
 ##    plt.show()
-        
+##        
 
         #print("Check3")
     # Most predictive term analysis

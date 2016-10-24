@@ -78,7 +78,7 @@ class PolyBasedClassifier:
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         rule={}
-        for i in ['arm', 'kick', 'neutral']:
+        for i in ['arm', 'kick', "neutral"]:
 
             #print(i)
             
@@ -93,12 +93,13 @@ class PolyBasedClassifier:
             #for b in matp:
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
             #print(minst)
-            #matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
+            matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
             final=list()
             #rule[minst]=[]
-            for j in self.mat[i][minst]:
+            for j in matr.T:
                 #print(j)
-                final.append(j)
+                final.append(statistics.mean(numpy.array(j).flatten()))
+                #print(Final")
             rule[i]={minst:final}
         for p in data:
             mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
@@ -106,12 +107,12 @@ class PolyBasedClassifier:
             #print(d)
             for tt in rule[d]:
                 sum1=0
-                for ppp in rule[d][tt]:
-                    sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, ppp.coef,len(ppp.coef))
+                #for ppp in rule[d][tt]:
+                sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
                     
-                throttle[d]=sum1
+                throttle[d]=(sum1/1)
+        
         return [[min(throttle, key=lambda x:throttle[x])]]
-                
         
             
                 
