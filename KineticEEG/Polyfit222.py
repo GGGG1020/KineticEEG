@@ -132,7 +132,7 @@ class PolyBasedClassifier:
                     totallist.append(ClassifyUtils.euclideandistance(j.coef, data[m].coef, self.deg+1))
                 #totallist.append(0)
                 if 0 in totallist:print("OOps")
-                totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-1*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+1*statistics.stdev(totallist))), totallist))
+                #totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-3*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+3*statistics.stdev(totallist))), totallist))
                 
                 
                 total+=sum(totallist)
@@ -168,7 +168,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(2)
+        self.classif=PolyBasedClassifier(1)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -186,6 +186,17 @@ class MultiLiveClassifierApplication:
           return (max(thresh_select), sorted(thresh_select)[-1]-sorted(thresh_select)[-2])
     def normalized(self, tt):
         return statistics.mean(tt)#*(1-statistics.stdev(tt))
+    def car(self,data_dict):
+         pp=numpy.matrix([data_dict[j] for j in data_dict])
+         #print(pp)
+         count=0
+         for j in pp.T:
+             avg=statistics.mean(numpy.array(j).flatten())
+             for p in data_dict:
+                 #print(data_dict[p][count])
+                 data_dict[p][count]-=avg
+             count+=1
+         return data_dict
     def runAppSubprocessedDiffAlgo(self):
         self.getter.start()
         getpid=self.getter.pid
@@ -228,8 +239,9 @@ class MultiLiveClassifierApplication:
                         # res=map(classify_func,res)
                          #print(list(res))
                          #res1=list(res)
-                         
-                     print(self.classif.find_most_clustered(data_dict)[0][0])
+                     #print(data_dict)
+                     #print(self.car(data_dict))
+                     print(self.classif.find_most_clustered(self.car(data_dict))[0][0])
                      for i in data_dict:
                         del data_dict[i][0:32]
                      #time.sleep(1)
@@ -482,6 +494,14 @@ class MultiLiveTrainingDataGatherer:
         self.events=qevents
         self.k=k
         self.processer=process2
+     def car(self,data_dict):
+         pp=numpy.matrix([data_dict[j] for j in data_dict])
+         count=0
+         for j in pp.T:
+             avg=statistics.mean(numpy.array(j).flatten())
+             for p in data_dict:
+                 data_dict[p][count]-=avg
+             count+=1
      def runApp(self):
         self.getter.start()
         getpid=self.getter.pid
@@ -535,6 +555,14 @@ class MultiLiveTrainingDataGatherer:
                         continue
             count=0
             for pl in data_dict:
+##                pp=numpy.matrix([data_dict[pl][j] for j in data_dict[pl]])
+##                count=0
+##                for j in pp.T:
+##                    avg=statistics.mean(j)
+##                    for p in data_dict[pl]:
+##                        data_dict[pl][p][count]-=avg
+##                    count+=1
+                    
                 sampslist[pl].append(Sample(pl, data_dict[pl]))
                 print("j")
             print("Train Done")
@@ -546,6 +574,11 @@ class MultiLiveTrainingDataGatherer:
                    # raise
         self.getter.terminate()
         self.processer.terminate()
+        for j in sampslist:
+            for p in sampslist[j]:
+                print(p.data)
+                self.car(p.data)
+                print(p.data)
         fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "wb")
         fileobj.write(pickle.dumps(sampslist))
         fileobj.close()
@@ -571,5 +604,6 @@ def MultiRunApp():
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runAppSubprocessedDiffAlgo()
 if __name__=='__main__':
+
     #MultiDataGather()
     MultiRunApp()

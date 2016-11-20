@@ -64,10 +64,10 @@ def difference2(listy):
 ##        
     
 if __name__=='__main__':
-    f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr", "rb")
+    f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
     pol=f.read()
     dd=pickle.loads(pol)
-    deg=11
+    deg=6
     data=dd
     actions=['arm', 'kick', 'neutral']
     mat={}
@@ -77,9 +77,9 @@ if __name__=='__main__':
         for j in data[i]:
             print(j)
             #j.data['FC5']=[0]
-            j.data['FC6']=[0]
-            j.data["F4"]=[0]
-            j.data["F3"]=[0]
+            #j.data['FC6']=[0]
+            #j.data["F4"]=[0]
+            #j.data["F3"]=[0]
     matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
     for i in data:
     #print("Check 1")
@@ -121,14 +121,14 @@ if __name__=='__main__':
 ##                plt.plot(ll)
 ##            plt.figure()
 ##    plt.show()
-##        
+        
 
         #print("Check3")
     # Most predictive term analysis
     indx=0
     for i in dd:
         for j in dd[i]:
-            j.data=[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['F3']))),j.data["F3"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['F4']))),j.data["F4"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['FC5']))), j.data["FC5"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['FC6']))),j.data["FC6"], deg)).coef)[indx]]
+            j.data=[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['FC5']))),j.data["FC5"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['F4']))),j.data["F4"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['FC5']))), j.data["FC5"], deg)).coef)[indx]]+[list(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(j.data['FC6']))),j.data["FC6"], deg)).coef)[indx]]
             print(j.data)
             #j.data=[statistics.stdev(j.data["F3"]),statistics.stdev(j.data["F4"]),statistics.stdev(j.data["FC5"]),statistics.stdev(j.data["FC6"])]
     
