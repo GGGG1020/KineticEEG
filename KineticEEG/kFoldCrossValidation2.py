@@ -6,6 +6,7 @@ import CSV_Proc
 import SLICERZ
 import statistics
 import Polyfit222 as PolyFitClassifier
+import numpy
 import BaseEEG
 import matplotlib.pyplot as plt
 import multiprocessing
@@ -101,12 +102,17 @@ class NonConformingInterface(Exception):
 class kFoldCrossValidationRunner2:
     def __init__(self, k, classify,degree, parsefunc=None):
         #print("HEER")
-        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
+        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "rb")
         self.dat=pickle.loads(self.fileobj.read())
         self.actions=["arm", "kick", "neutral"]
+        
         #print(self.dat['kick'])
         for i in self.dat:
             for j in self.dat[i]:
+                for p in j.data:
+                    #j.data[p]=self.highpass(j.data[p])
+                    pass
+                #j.data=self.car(j.data)
                 pass
                 #del j.data['FC5']
                 #del j.data['FC6']
@@ -131,6 +137,25 @@ class kFoldCrossValidationRunner2:
         self.actions=['arm', 'kick', 'neutral']
         #if not hasattr(test, "train") or not hasattr(test, "classify"):
             #raise NonConformingInterface("Not proper classifier")
+    def highpass(self,signal):
+        iir_tc=0.98
+        background=signal[0]
+        hp=list()
+        hp.append(0)
+        for i in range(1, len(signal)):
+            signal[i]=float(signal[i])
+            background=(iir_tc*background)+(1-iir_tc)*signal[i]
+            hp.append(signal[i]-background)
+        return hp
+    def car(self,data_dict):
+         pp=numpy.matrix([data_dict[j] for j in data_dict])
+         count=0
+         for j in pp.T:
+             avg=statistics.mean(numpy.array(j).flatten())
+             for p in data_dict:
+                 data_dict[p][count]-=avg
+             count+=1
+         return data_dict
     def run2(self):
         classlist={}
         reslist=list()
@@ -323,11 +348,11 @@ class kFoldCrossValidationRunner2:
 ##            print("neutral", sum(i.label=='neutral' for i in unpacked))
 ##            print("arm", sum(i.label=='arm' for i in unpacked))
 ##            print("kick", sum(i.label=='kick' for i in unpacked))
-            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
-            for j in FILE_LIST:
-                lm=pickle.load(open(j, "rb"))
-                for p in lm:
-                        unpacked+=lm[p]
+##            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
+##            for j in FILE_LIST:
+##                lm=pickle.load(open(j, "rb"))
+##                for p in lm:
+##                        unpacked+=lm[p]
             count=0
 ##            print(len(unpacked))
             for p in unpacked:

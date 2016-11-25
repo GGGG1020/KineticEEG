@@ -111,7 +111,7 @@ class PolyBasedClassifier:
                 sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
                     
                 throttle[d]=(sum1/1)
-        
+    
         return [[min(throttle, key=lambda x:throttle[x])]]
         
             
@@ -132,7 +132,7 @@ class PolyBasedClassifier:
                     totallist.append(ClassifyUtils.euclideandistance(j.coef, data[m].coef, self.deg+1))
                 #totallist.append(0)
                 if 0 in totallist:print("OOps")
-                #totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-3*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+3*statistics.stdev(totallist))), totallist))
+                totallist=list(filter(lambda x: (x>=(statistics.mean(totallist)-3*statistics.stdev(totallist)) and x<=(statistics.mean(totallist)+3*statistics.stdev(totallist))), totallist))
                 
                 
                 total+=sum(totallist)
@@ -168,7 +168,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(1)
+        self.classif=PolyBasedClassifier(18)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -605,5 +605,5 @@ def MultiRunApp():
     myApp.runAppSubprocessedDiffAlgo()
 if __name__=='__main__':
 
-    #MultiDataGather()
+    MultiDataGather()
     MultiRunApp()

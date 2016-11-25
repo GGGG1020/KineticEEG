@@ -67,7 +67,7 @@ if __name__=='__main__':
     f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
     pol=f.read()
     dd=pickle.loads(pol)
-    deg=6
+    deg=18
     data=dd
     actions=['arm', 'kick', 'neutral']
     mat={}
