@@ -72,7 +72,7 @@ class PolyBasedClassifier:
         output=self.k_nn_old(mat2)
         num=abs(sorted(output, key=lambda x:x[1])[0][1]-sorted(output, key=lambda x:x[1])[1][1])
         return [min(output, key=lambda x:x[1]), num]
-    def find_most_clustered(self, data):
+    def smart_algo(self, data):
         matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
         mat2={}
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
@@ -168,7 +168,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(18)
+        self.classif=PolyBasedClassifier(14)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -241,7 +241,7 @@ class MultiLiveClassifierApplication:
                          #res1=list(res)
                      #print(data_dict)
                      #print(self.car(data_dict))
-                     print(self.classif.find_most_clustered(self.car(data_dict))[0][0])
+                     print(self.classif.smart_algo(self.car(data_dict))[0][0])
                      for i in data_dict:
                         del data_dict[i][0:32]
                      #time.sleep(1)
@@ -605,5 +605,5 @@ def MultiRunApp():
     myApp.runAppSubprocessedDiffAlgo()
 if __name__=='__main__':
 
-    MultiDataGather()
+    #MultiDataGather()
     MultiRunApp()

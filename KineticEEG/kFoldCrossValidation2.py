@@ -102,7 +102,7 @@ class NonConformingInterface(Exception):
 class kFoldCrossValidationRunner2:
     def __init__(self, k, classify,degree, parsefunc=None):
         #print("HEER")
-        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "rb")
+        self.fileobj=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
         self.dat=pickle.loads(self.fileobj.read())
         self.actions=["arm", "kick", "neutral"]
         
@@ -110,7 +110,7 @@ class kFoldCrossValidationRunner2:
         for i in self.dat:
             for j in self.dat[i]:
                 for p in j.data:
-                    #j.data[p]=self.highpass(j.data[p])
+##                    j.data[p]=self.highpass(j.data[p])
                     pass
                 #j.data=self.car(j.data)
                 pass
@@ -331,7 +331,7 @@ class kFoldCrossValidationRunner2:
             for i in self.actions:
                 if not ransam.label==i:
                     todelete.append(i)
-            ccc=0
+            ccc=0  
             del unpacked[0]
 ##            while len(todelete)>0:
 ##                ccc=0
@@ -342,8 +342,8 @@ class kFoldCrossValidationRunner2:
 ##                        break
 ##                    else:
 ##                        ccc+=1
-######                
-##
+####                
+
             
 ##            print("neutral", sum(i.label=='neutral' for i in unpacked))
 ##            print("arm", sum(i.label=='arm' for i in unpacked))
@@ -380,7 +380,7 @@ class kFoldCrossValidationRunner2:
             #print(self.temp.classify(ransam.data), ransam.label)
             #print(self.temp.classify(ransam.data))
             #self.temp.find_most_clustered([])
-            guess=self.temp.find_most_clustered(ransam.data)[0][0]
+            guess=self.temp.smart_algo(ransam.data)[0][0]
             
             if guess==ransam.label:
                 #pol1.append(self.temp.classify_old(ransam.data)[0][1])
@@ -505,7 +505,7 @@ def DataGather():
     myApp.runApp()                
 if __name__=='__main__':
     #DataGather()
-    print("Welcome to KineticEEG kFoldCrossValidation2:")
+    print("KineticEEG kFoldCrossValidation2 Simulator")
     
     outputFile = open('C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Form'.format(time.asctime().replace(":", " ")), 'w', newline='')
     outputWriter = csv.writer(outputFile)
