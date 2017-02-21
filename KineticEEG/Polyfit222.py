@@ -6,6 +6,7 @@ import BaseEEG
 import statistics
 import ctypes
 import itertools
+import kFoldCrossValidation2
 import statistics
 import time
 import pickle
@@ -45,7 +46,37 @@ class Sample:
         for i in self.data:
             tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
         return tote
-            
+class ErrorDetectionAlgorithm:
+    """This is a k-Nearest Neighbor Classifier to find the erronous classifications made"""
+    def __init__(self, classifier, kfoldresults):
+        '''kfoldresults is a tuple containing the different fields ending in class (CORRECT/INCORRECT)'''
+        self.classifier=classifier
+        self.kfoldresults=kfoldresults
+        #print(len(self.kfoldresults))
+    def classify(self, sample):
+        results=self.classifier.smart_algo(sample)
+        results=results[1:3]
+        self.results=[]
+        for i in self.kfoldresults:
+            self.results.append([ClassifyUtils.euclideandistance(i[0:2], results,2), i[-1]])
+        self.results=sorted(self.results, key=lambda x:x[0])
+        listy=list()
+        for i in self.results[0:10]:
+            if not i[0]==0:
+                listy.append(i[-1])
+        try:
+            guess=statistics.mode(listy)
+        except:
+            guess='tie'
+        return guess
+
+def RunErrorDetectionApp(file, deg):
+    crossval=kFoldCrossValidation2.kFoldCrossValidationRunner2(100,PolyBasedClassifier, deg)
+    output=crossval.run_for_errors()
+    jk=ErrorDetectionAlgorithm(crossval.temp, output)
+    
+        
+        
             
         
 class PolyBasedClassifier:
@@ -111,8 +142,9 @@ class PolyBasedClassifier:
                 sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
                     
                 throttle[d]=(sum1/1)
+                
     
-        return [[min(throttle, key=lambda x:throttle[x])]]
+        return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
         
             
                 
@@ -168,7 +200,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(14)
+        self.classif=PolyBasedClassifier(13)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -600,10 +632,11 @@ def MultiRunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #print("Start")
-    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
+    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (13).kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runAppSubprocessedDiffAlgo()
 if __name__=='__main__':
 
     #MultiDataGather()
     MultiRunApp()
+    pass
