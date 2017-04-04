@@ -123,7 +123,7 @@ class PolyBasedClassifier:
                 #print(str(i+"v"+j))
                 matp[j].append(statistics.mean(initlist))
             #for b in matp:
-            print(len(self.mat['kick']['FC5']))
+            #print(len(self.mat['kick']['FC5']))
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
             #print(minst)
             matr=numpy.matrix([i.coef for i in self.mat[i][minst]])

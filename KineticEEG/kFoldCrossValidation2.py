@@ -16,7 +16,7 @@ import time
 import ctypes
 import pickle
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (14).kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (15).kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix):
@@ -619,13 +619,13 @@ class kFoldCrossValidationRunner2:
             #print(self.temp.classify(ransam.data), ransam.label)
             #print(self.temp.classify(ransam.data))
             #self.temp.find_most_clustered([])
-            print(self.temp.mat)
+            #print(self.temp.mat)
             guess=self.temp.smart_algo(ransam.data)
             #print(guess[0][0])
             if guess[0][0]==ransam.label:
                 #pol1.append(self.temp.classify_old(ransam.data)[0][1])
                 #print("Right")
-                print(guess, ransam.label)
+                #print(guess, ransam.label)
                 pol1.append(guess[1])
                 right2.append(guess[2])
                 final_results.append(tuple((guess[1], guess[2], "right")))
@@ -634,7 +634,7 @@ class kFoldCrossValidationRunner2:
                 #print(guess, ransam.label)
                 pol2.append(guess[1])
                 wrong2.append(guess[2])
-                print(guess, ransam.label)
+                #print(guess, ransam.label)
                 final_results.append(tuple((guess[1], guess[2], "wrong")))
                 #pol2.append(self.temp.classify_old(ransam.data)[0][1])
                 pass
