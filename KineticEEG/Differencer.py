@@ -64,10 +64,10 @@ def difference2(listy):
 ##        
     
 if __name__=='__main__':
-    f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "rb")
+    f=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
     pol=f.read()
     dd=pickle.loads(pol)
-    deg=8
+    deg=4
     data=dd
     actions=['arm', 'kick', 'neutral']
     mat={}

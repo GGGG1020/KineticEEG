@@ -91,6 +91,7 @@ class PolyBasedClassifier:
         for i in data:
             for j in data[i]:
                 self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
+                #print(self.mat)
                 #self.mat[i][j].append(data[i][j])
 
         #print(self.mat)
@@ -104,13 +105,13 @@ class PolyBasedClassifier:
         num=abs(sorted(output, key=lambda x:x[1])[0][1]-sorted(output, key=lambda x:x[1])[1][1])
         return [min(output, key=lambda x:x[1]), num]
     def smart_algo(self, data):
+    
         matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
         mat2={}
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         rule={}
-        for i in ['arm', 'kick', "neutral"]:
-
+        for i in ['arm', 'kick','neutral']:
             #print(i)
             
             for j in self.mat[i]:
@@ -122,6 +123,7 @@ class PolyBasedClassifier:
                 #print(str(i+"v"+j))
                 matp[j].append(statistics.mean(initlist))
             #for b in matp:
+            print(len(self.mat['kick']['FC5']))
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
             #print(minst)
             matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
@@ -200,7 +202,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(13)
+        self.classif=PolyBasedClassifier(4)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -632,10 +634,11 @@ def MultiRunApp():
     q2, q3=multiprocessing.Pipe()
     processor=multiprocessing.Process(target=BaseEEG.exec_proc, args=(q, q2, 1))
     #print("Start")
-    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (13).kineegtr", "rb"))
+    myApp=MultiLiveClassifierApplication(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb"))
     #myApp=LiveTrainingDataGatherer(getter, processor, q3, open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.dat", "wb"))
     myApp.runAppSubprocessedDiffAlgo()
 if __name__=='__main__':
+
 
     #MultiDataGather()
     MultiRunApp()
