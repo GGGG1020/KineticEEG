@@ -150,6 +150,56 @@ class PolyBasedClassifier:
         
             
                 
+    def smart_algo(self, data):
+    
+        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
+        mat2={}
+        #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+        throttle={}
+        rule={}
+        for i in ['arm', 'kick','neutral']:
+            #print(i)
+            
+            for j in self.mat[i]:
+                #print(mat[i][j])
+                initlist=[]
+                for p in itertools.combinations(self.mat[i][j], 2):
+                    #print(str(i+"v"+j))
+                    initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
+                #print(str(i+"v"+j))
+                matp[j].append(statistics.mean(initlist))
+            #for b in matp:
+            #print(len(self.mat['kick']['FC5']))
+            minst=min(matp, key=lambda x:statistics.mean(matp[x]))
+            matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
+            #print(minst)
+            #print(self.mat[
+            matr=numpy.matrix([t.coef for t in self.mat[i][minst]])
+            final=list()
+            #rule[minst]=[]
+            for j in matr.T:
+                #print(j)
+                final.append(statistics.mean(numpy.array(j).flatten()))
+                #print(Final")
+            rule[i]={minst:final}
+            #print(rule)
+        for p in data:
+            mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
+        for d in rule:
+            #print(d)
+            for tt in rule[d]:
+                sum1=0
+                #print(d,tt)
+                #for ppp in rule[d][tt]:
+                sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
+                    
+                throttle[d]=(sum1/1)
+                
+        #print(matp)
+        return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
+        
+            
+                
             
             
             
