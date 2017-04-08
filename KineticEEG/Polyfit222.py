@@ -104,6 +104,75 @@ class PolyBasedClassifier:
         output=self.k_nn_old(mat2)
         num=abs(sorted(output, key=lambda x:x[1])[0][1]-sorted(output, key=lambda x:x[1])[1][1])
         return [min(output, key=lambda x:x[1]), num]
+    def cross_classify(self, data, rule_vectors):
+        results=dict()
+        for i in rule_vectors:
+            for j in i:
+                results[i]=(i,ClassifyUtils.euclideandistance(data[j].coef, rule[i][j],len(rule[i][j])))
+        return min(results, key=lambda x: results[x][1])
+        
+
+                
+        
+    def smart_algo_2(self, data):
+    
+        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
+        mat2={}
+        #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+        throttle={}
+        rule={}
+        boundarypoints={"arm":{}, 'kick':{}}
+        for i in ['arm', 'kick']:
+            #print(i)
+            
+            for j in self.mat[i]:
+                #print(mat[i][j])
+                initlist=[]
+                for p in itertools.combinations(self.mat[i][j], 2):
+                    #print(str(i+"v"+j))
+                    initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
+                #print(str(i+"v"+j))
+                boundarypoints[i][j]=initlist
+                matp[j].append(statistics.mean(initlist))
+                
+            #for b in matp:
+            #print(len(self.mat['kick']['FC5']))
+        for i in ['arm', 'kick','neutral']:
+            minst=min(matp, key=lambda x:statistics.mean(matp[x]))
+            #print(minst)
+            matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
+            final=list()
+            #rule[minst]=[]
+            for j in matr.T:
+                #print(j)
+                final.append(statistics.mean(numpy.array(j).flatten()))
+                #print(Final")
+            rule[i]={minst:final}
+        for p in data:
+            mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
+        for d in ['arm', 'kick']:
+            #print(d)
+            for tt in rule[d]:
+                sum1=0
+                #for ppp in rule[d][tt]:
+                sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
+                    
+                throttle[d]=(sum1/1)
+        #print(boundarypoints)
+        if throttle[min(throttle, key=lambda x:throttle[x])]>(numpy.percentile(boundarypoints[min(throttle, key=lambda x:throttle[x])][minst],95)+(2*statistics.stdev(boundarypoints[min(throttle, key=lambda x:throttle[x])][minst]))):
+            #print("Hi")
+            return [["neutral"]]
+            
+
+                 
+                
+    
+        return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
+        
+            
+        
+
+        
     def smart_algo(self, data):
     
         matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
@@ -111,7 +180,7 @@ class PolyBasedClassifier:
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         rule={}
-        for i in ['arm', 'kick','neutral']:
+        for i in ['arm', 'kick', "neutral"]:
             #print(i)
             
             for j in self.mat[i]:
@@ -124,6 +193,7 @@ class PolyBasedClassifier:
                 matp[j].append(statistics.mean(initlist))
             #for b in matp:
             #print(len(self.mat['kick']['FC5']))
+        for i in ['arm', 'kick','neutral']:
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
             #print(minst)
             matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
@@ -150,14 +220,15 @@ class PolyBasedClassifier:
         
             
                 
-    def smart_algo(self, data):
+    def smart_algo_neutral(self, data):
     
         matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
         mat2={}
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
+        min_sensor=list()
         rule={}
-        for i in ['arm', 'kick','neutral']:
+        for i in ['arm', 'kick']:
             #print(i)
             
             for j in self.mat[i]:
@@ -171,6 +242,7 @@ class PolyBasedClassifier:
             #for b in matp:
             #print(len(self.mat['kick']['FC5']))
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
+            min_sensor.append(minst)
             matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
             #print(minst)
             #print(self.mat[
@@ -182,18 +254,45 @@ class PolyBasedClassifier:
                 final.append(statistics.mean(numpy.array(j).flatten()))
                 #print(Final")
             rule[i]={minst:final}
+        for i in ['neutral']:
+            subdict=dict()
+            for j in list(set(min_sensor)):
+                matr=numpy.matrix([t.coef for t in self.mat[i][j]])
+                final=list()
+                
+                for q in matr.T:
+                    #print(j)
+                    final.append(statistics.mean(numpy.array(q).flatten()))
+                    #print(Final")
+                subdict[j]=final
+            rule[i]=subdict
+            
+                
+                
+                
             #print(rule)
         for p in data:
             mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
-        for d in rule:
+        for d in ['arm', 'kick']:
             #print(d)
+            sum1=0
             for tt in rule[d]:
-                sum1=0
+                
                 #print(d,tt)
                 #for ppp in rule[d][tt]:
                 sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
                     
                 throttle[d]=(sum1/1)
+        for d in ['neutral']:
+            minlist=list()
+            for tt in rule[d]:
+                minlist.append(ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt])))
+            throttle[d]=max(minlist)
+                
+                
+
+                
+                
                 
         #print(matp)
         return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
@@ -252,7 +351,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(4)
+        self.classif=PolyBasedClassifier(13)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -311,7 +410,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==32:                   #print("In Detector")
+                if len(data_dict["F3"])==24:                   #print("In Detector")
                     
                     #if (countr%4)==0:
                          #print("Here")
@@ -327,7 +426,7 @@ class MultiLiveClassifierApplication:
                      #print(self.car(data_dict))
                      print(self.classif.smart_algo(self.car(data_dict))[0][0])
                      for i in data_dict:
-                        del data_dict[i][0:32]
+                        del data_dict[i][0:24]
                      #time.sleep(1)
             
                          #countr+=1
@@ -623,7 +722,7 @@ class MultiLiveTrainingDataGatherer:
                             first=False
                         for i in data_dict[tp]:
                             data_dict[tp][i].append(data[i][0][2])
-                        if len(data_dict[tp]["F3"])==32:
+                        if len(data_dict[tp]["F3"])==24:
                             for i in data_dict[tp]:
                                 del data_dict[tp][i][0]
                             #print(self.livedataclass.test_classifiers_ret(data_dict))

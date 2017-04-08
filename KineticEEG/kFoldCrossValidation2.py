@@ -16,7 +16,7 @@ import time
 import ctypes
 import pickle
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (15).kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (17).kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix):
@@ -144,7 +144,7 @@ class kFoldCrossValidationRunner2:
         self.classify=classify
         test=classify(2)
         
-        self.actions=['arm', 'kick', "neutral"]
+        self.actions=['arm', 'kick',"neutral"]
         #if not hasattr(test, "train") or not hasattr(test, "classify"):
             #raise NonConformingInterface("Not proper classifier")
     def highpass(self,signal):
@@ -563,12 +563,6 @@ class kFoldCrossValidationRunner2:
             ransam=unpacked[0]
             unpacked2=list()
             neutral_store=list()
-            for i in unpacked:
-                if not i.label=="neutral":
-                    unpacked2.append(i)
-                else:
-                    neutral_store.append(i)
-            unpacked=unpacked2
             #while ransam.label=="neutral":
                 #random.shuffle(unpacked)
                 #ransam=unpacked[0]
@@ -578,11 +572,11 @@ class kFoldCrossValidationRunner2:
                 #traindict[i]=ransam
             #temp.train(traindict)
             #classlist[j]=temp
-            todelete=[]
-            for i in self.actions:
-                if not ransam.label==i:
-                    todelete.append(i)
-            ccc=0  
+            #todelete=[]
+##            for i in self.actions:
+##                if not ransam.label==i:
+##                    todelete.append(i)
+##            ccc=0  
             del unpacked[0]
 ##            while len(todelete)>0:
 ##                ccc=0
@@ -633,11 +627,11 @@ class kFoldCrossValidationRunner2:
             #print(self.temp.classify(ransam.data))
             #self.temp.find_most_clustered([])
             #print(self.temp.mat)
-            guess=self.temp.smart_algo_2way(ransam.data)
+            guess=self.temp.smart_algo_with_neutral(ransam.data)
             #print(guess[0][0])
             if guess[0][0]==ransam.label:
                 #pol1.append(self.temp.classify_old(ransam.data)[0][1])
-                print("Right")
+                #print("Right")
                 #print(ransam.label)
                 #print(guess, ransam.label)
                 #pol1.append(guess[1])
@@ -662,10 +656,12 @@ class kFoldCrossValidationRunner2:
         reslist=list()
         errors=[]
         pol1=[]
+        wrong2=[]
         pol2=[]
-        wrong2=list()
-        dt3file=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
-        dt3dat=pickle.loads(dt3file.read())
+        wronglyassigned=list()
+        wronglyidentified=list()
+        #dt3file=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
+        #dt3dat=pickle.loads(dt3file.read())
         #del dt3dat['neutral']
         #del self.dat['neutral']
         right2=list()
@@ -760,24 +756,47 @@ class kFoldCrossValidationRunner2:
                 #pol1.append(self.temp.classify_old(ransam.data)[0][1])
                 #print("Right")
                 #print(guess, ransam.label)
-                pol1.append(guess[1])
-                right2.append(guess[2])
-                final_results.append(tuple((guess[1], guess[2], "right")))
+                #pol1.append(guess[1])
+                #right2.append(guess[2])
+                #final_results.append(tuple((guess[1], guess[2], "right")))
                 right+=1
             else:
+                wronglyassigned.append(guess[0][0])
+                #print(guess[0][0])
+                wronglyidentified.append(ransam.label)
+                #pol2.append(guess[1])
+                #wrong2.append(guess[2])
                 #print(guess, ransam.label)
-                pol2.append(guess[1])
-                wrong2.append(guess[2])
-                #print(guess, ransam.label)
-                final_results.append(tuple((guess[1], guess[2], "wrong")))
+                #final_results.append(tuple((guess[1], guess[2], "wrong")))
                 #pol2.append(self.temp.classify_old(ransam.data)[0][1])
                 pass
             total+=1
             
             reslist.append(right/total)
-        print(right2, wrong2)
-        print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
-        print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
+        #print(right2, wrong2)
+        for i in ['neutral']:
+            count=0
+            for j in wronglyassigned:
+                if j==i:
+                    count+=1
+            print(i," ")
+            print("wronglyassigned", " ")
+            print(count)
+            for j in wronglyidentified:
+                count=0
+                if j==i:
+                    count+=1
+            print(i, " ")
+            print("wronglyidentified", " ")
+            print(count)
+            
+                
+                
+                
+            
+                
+        #print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
+        #print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
         return [len(list(filter(lambda x:x==1, reslist))),errors]
 
 class kFoldCrossValidationRunner:
@@ -894,7 +913,7 @@ if __name__=='__main__':
     #outputWriter = csv.writer(outputFile)
     listy=[]
     res=[]
-    for i in range(1,21):
+    for i in range(1,25):
         valrunner=kFoldCrossValidationRunner2(100, Polyfit222.PolyBasedClassifier, i, FILENAME)
         pl=valrunner.run1()
         #valrunner.test_for_error_system()

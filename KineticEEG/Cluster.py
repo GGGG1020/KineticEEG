@@ -7,7 +7,7 @@ import statistics
 import numpy.polynomial as poly
 from Polyfit222 import Sample
 deg=4
-filename="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (15).kineegtr"
+filename="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (14).kineegtr"
 fileobj=open(filename, "rb")
 results=dict()
 dat=pickle.loads(fileobj.read())
