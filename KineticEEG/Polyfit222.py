@@ -351,7 +351,7 @@ class MultiLiveClassifierApplication:
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
-        self.classif=PolyBasedClassifier(13)
+        self.classif=PolyBasedClassifier(12)
         #for q in self.dict_data:
            # self.classif.train(self.dict_data[q])
         self.processer=process2
@@ -410,7 +410,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==24:                   #print("In Detector")
+                if len(data_dict["F3"])==32:                   #print("In Detector")
                     
                     #if (countr%4)==0:
                          #print("Here")
@@ -426,7 +426,7 @@ class MultiLiveClassifierApplication:
                      #print(self.car(data_dict))
                      print(self.classif.smart_algo(self.car(data_dict))[0][0])
                      for i in data_dict:
-                        del data_dict[i][0:24]
+                        del data_dict[i][0:32]
                      #time.sleep(1)
             
                          #countr+=1
@@ -722,7 +722,7 @@ class MultiLiveTrainingDataGatherer:
                             first=False
                         for i in data_dict[tp]:
                             data_dict[tp][i].append(data[i][0][2])
-                        if len(data_dict[tp]["F3"])==24:
+                        if len(data_dict[tp]["F3"])==32:
                             for i in data_dict[tp]:
                                 del data_dict[tp][i][0]
                             #print(self.livedataclass.test_classifiers_ret(data_dict))

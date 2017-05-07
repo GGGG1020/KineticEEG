@@ -16,7 +16,7 @@ import time
 import ctypes
 import pickle
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (17).kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix):
@@ -648,7 +648,46 @@ class kFoldCrossValidationRunner2:
                 pass
             total+=1
         return right
-            
+    def run1data(self):
+        classlist={}
+        final_results=list()
+        #del self.actions[2]
+        reslist=list()
+        errors=[]
+        pol1=[]
+        wrong2=[]
+        pol2=[]
+        wronglyassigned=list()
+        wronglyidentified=list()
+        right2=list()
+        unpacked=list()
+        for b in self.actions:
+            unpacked+=self.dat[b]
+        for i in range(18):
+            testsam=unpacked.pop(0)
+            classlist={}
+            right=0
+            total=0
+            self.temp=self.classify(self.deg)
+            traindict={}
+            unpacked2=list()
+            count=0
+            for p in unpacked:
+                if True:
+                    self.temp.train({p.label:p.data})     
+                count+=1
+            guess=self.temp.smart_algo(testsam.data)
+            if guess[0][0]==testsam.label:
+                print("right")
+                right+=1
+            else:
+                wronglyassigned.append(guess[0][0])
+                #print(guess[0][0])
+                wronglyidentified.append(testsam.label)
+            total+=1
+            unpacked.append(testsam)
+            reslist.append(right/total)
+        return [(len(list(filter(lambda x:x==1, reslist)))/18)*100,errors]
     def run1(self):
         classlist={}
         final_results=list()
@@ -797,7 +836,8 @@ class kFoldCrossValidationRunner2:
                 
         #print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
         #print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
-        return [len(list(filter(lambda x:x==1, reslist))),errors]
+        #len(list(filter(lambda x:x==1, reslist))),
+        return [right, errors]
 
 class kFoldCrossValidationRunner:
     def __init__(self, k, classify,i):
@@ -915,7 +955,7 @@ if __name__=='__main__':
     res=[]
     for i in range(1,25):
         valrunner=kFoldCrossValidationRunner2(100, Polyfit222.PolyBasedClassifier, i, FILENAME)
-        pl=valrunner.run1()
+        pl=valrunner.run1data()
         #valrunner.test_for_error_system()
         print(pl)
         um=0
