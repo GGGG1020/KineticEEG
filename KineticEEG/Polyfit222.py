@@ -81,21 +81,15 @@ def RunErrorDetectionApp(file, deg):
         
 class PolyBasedClassifier:
     def __init__(self,degree, actions=["arm", "kick", "neutral"]):
-        self.mat={}
-        self.deg=degree
-        self.actions=actions
+        self.mat={} #self.mat will contain the data for each action, for each variable.
+        self.deg=degree #Degree of fit
+        self.actions=actions #List of actions.
         for i in actions:self.mat.update({i:[]})
-        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})#Set up data structure per action, per sensor
     def train(self, data):
-    
-        for i in data:
-            for j in data[i]:
-                self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg)))
-                #print(self.mat)
-                #self.mat[i][j].append(data[i][j])
-
-        #print(self.mat)
-                
+        for i in data: #i will equal the current action 
+            for j in data[i]:#j is the current sensor 
+                self.mat[i][j].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[i][j]))), data[i][j], self.deg))) #Supply the data for a polynomial fit(seconds vs EEG Mu wave power)
     def classify(self, data):
         mat2={}
         for i in data:
@@ -116,8 +110,8 @@ class PolyBasedClassifier:
         
     def smart_algo_2(self, data):
     
-        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
-        mat2={}
+        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]} #Data structrure for the incoming data(Multiple pieces of data not needed)
+        mat2={}#dictionary
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         rule={}
@@ -175,48 +169,37 @@ class PolyBasedClassifier:
         
     def smart_algo(self, data):
     
-        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
+        matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}#Data structrure for the incoming data(Multiple pieces of data not needed)
         mat2={}
         #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         rule={}
-        for i in ['arm', 'kick', "neutral"]:
-            #print(i)
-            
-            for j in self.mat[i]:
-                #print(mat[i][j])
-                initlist=[]
-                for p in itertools.combinations(self.mat[i][j], 2):
-                    #print(str(i+"v"+j))
-                    initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
-                #print(str(i+"v"+j))
-                matp[j].append(statistics.mean(initlist))
-            #for b in matp:
-            #print(len(self.mat['kick']['FC5']))
-        for i in ['arm', 'kick','neutral']:
-            minst=min(matp, key=lambda x:statistics.mean(matp[x]))
-            #print(minst)
-            matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
-            final=list()
-            #rule[minst]=[]
-            for j in matr.T:
-                #print(j)
-                final.append(statistics.mean(numpy.array(j).flatten()))
-                #print(Final")
+        for i in ['arm', 'kick', "neutral"]:#Associative rule mining phase
+            for j in self.mat[i]:# for sensor in action(j is the current sensor)
+                initlist=[]#initlist is a list which one will append the distances alculated to.This is done for statistical purposes
+                for p in itertools.combinations(self.mat[i][j], 2):#For the 6 choose two combinations of two polynomial object ifor a given movement, sensor
+                    initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))#Append the euclidean distance between the two .
+                matp[j].append(statistics.mean(initlist))#Append the mean of all of the distances for this sensor.
+        for i in ['arm', 'kick','neutral']:#Going through each action
+            minst=min(matp, key=lambda x:statistics.mean(matp[x]))# Find the most clustered sensor by finding the minimum average distance over the three actions.
+            matr=numpy.matrix([p.coef for p in self.mat[i][minst]])#Creation of a numpy matrix 
+            final=list()#List to contain rules.
+            for j in matr.T: #Transposition of the m
+                final.append(statistics.mean(numpy.array(j).flatten()))#Flatten the row and average it in order to create the rule vector.
             rule[i]={minst:final}
-        for p in data:
-            mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
-        for d in rule:
-            #print(d)
-            for tt in rule[d]:
-                sum1=0
+        for p in data: #Exit Training phase, begin work on live data.
+            mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))#Featurize(find the polynomial fit of) the data
+        for d in rule: #Classification phase-Iterate over actions
+            for tt in rule[d]: #Iterate over sensor(ONly one sensor, no true iteration)
+                sum1=0#Assign variable
                 #for ppp in rule[d][tt]:
-                sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
+                sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))#Add the Euclidean Distance between sample and rule
                     
-                throttle[d]=(sum1/1)
+                throttle[d]=(sum1/1)#append information to dictionary
                 
     
-        return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
+        return [[min(throttle, key=lambda x:throttle[x])],
+                throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ] #Return classification.
         
             
                 
@@ -224,7 +207,6 @@ class PolyBasedClassifier:
     
         matp={"F3":[], "F4":[], "FC5":[], "FC6":[]}
         mat2={}
-        #for i in self.actions:mat2.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
         throttle={}
         min_sensor=list()
         rule={}
@@ -338,16 +320,6 @@ class MultiLiveClassifierApplication:
         self.q=q
         self.dict_data=pickle.loads(profile.read())
         self.classifiers=dict()
-##        if subprocessed:
-##             dubs=[]
-##             for i in self.dict_data:
-##                  dubs.append(tuple((i, self.dict_data[i])))
-##             self.classq, q=multiprocessing.Pipe()
-##             self.classproc=multiprocessing.Process(target=setup_classifers, args=(q, dubs,))     
-        #for i in self.dict_data:
-            #curr_class=SLICERZ.LiveRunClassifier()
-            #curr_class.run_train(self.dict_data[i])
-            #self.classifiers[i]=curr_class
         unpacked=list()
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
@@ -725,12 +697,10 @@ class MultiLiveTrainingDataGatherer:
                         if len(data_dict[tp]["F3"])==32:
                             for i in data_dict[tp]:
                                 del data_dict[tp][i][0]
-                            #print(self.livedataclass.test_classifiers_ret(data_dict))
                             raise KeyboardInterrupt
                         
                             
                         print(time.asctime())
-                     #a#   self.system_up_time+=16/128
                 except:
                     for i in range(32):
                          self.q.recv()
