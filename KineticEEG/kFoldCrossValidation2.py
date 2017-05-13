@@ -14,6 +14,7 @@ import math
 import random
 import time
 import ctypes
+#lucky fly.pt
 import pickle
 import csv
 FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
@@ -65,13 +66,8 @@ class kFoldCrossValidationGatherer:
                 
                 try:
                     while self.getter.is_alive():
-                        #print(data_dict)
-                        #print(data_dict[tp])
                         data=self.q.recv()
                         if first:
-                            
-                            #print(tp)
-                            #time.sleep(1)
                             data=self.q.recv()
                             first=False
                         for j in data_dict[tp]:
@@ -79,7 +75,6 @@ class kFoldCrossValidationGatherer:
                         if len(data_dict[tp]["F3"])==24:
                             for p in data_dict[tp]:
                                 del data_dict[tp][p][0]
-                            #print(self.livedataclass.test_classifiers_ret(data_dict))
                             raise KeyboardInterrupt
                         
                             
@@ -111,42 +106,14 @@ class NonConformingInterface(Exception):
 
 class kFoldCrossValidationRunner2:
     def __init__(self, k, classify,degree, filename,parsefunc=None):
-        #print("HEER")
         self.fileobj=open(filename, "rb")
         self.dat=pickle.loads(self.fileobj.read())
-        self.actions=["arm", "kick",]
-        
-        #print(self.dat['kick'])
-        for i in self.dat:
-            for j in self.dat[i]:
-                for p in j.data:
-                    #j.data[p]=self.highpass(j.data[p])
-                    pass
-                    #j.data=self.car(j.data)
-               # pass
-                #del j.data['FC5']
-                #del j.data['FC6']
-                #del j.data["F4"]5
-                #del j.data["F3"]
-        #for i in self.dat:
-            #for j in self.dat[i]:
-               # print(j.data.keys())
-                #print(j.data.keys())
-        self.deg=degree
-        ##for i in self.dat:
-            ##for j in range(len(self.dat[i])):
-                ##for t in self.dat[i][j]:
-                    ##if t.data==self.dat[self.dat[i][j].index(j)+1].data:
-                        ##del self.dat[i][j][self.dat[self.dat[i][j].index(j)+1]]
-            
-                                 
+        self.actions=["arm", "kick","neutral"]
+        self.deg=degree         
         self.k=k
         self.classify=classify
         test=classify(2)
-        
         self.actions=['arm', 'kick',"neutral"]
-        #if not hasattr(test, "train") or not hasattr(test, "classify"):
-            #raise NonConformingInterface("Not proper classifier")
     def highpass(self,signal):
         iir_tc=0.98
         background=signal[0]
@@ -173,40 +140,18 @@ class kFoldCrossValidationRunner2:
         unpacked=list()
         for b in self.actions:
             unpacked+=self.dat[b]
-            #print(unpacked)
         for i in range(self.k):
             classlist={}
             right=0
             total=0
             temp=self.classify(12,4)
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
             random.shuffle(unpacked)
             ransam=unpacked[0]
-                    
             temp.train({"arm":self.dat["arm"][0].data,"kick":self.dat["kick"][0].data,"neutral":self.dat["neutral"][0].data})
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
             count=0
             for p in unpacked:
-
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
                 count+=1
-                #print(right, total
-                #print(temp.classify(p.data), p.label)
                 if temp.smart_algo(p.data).lower()==p.label:
                     right+=1
                 total+=1
@@ -230,23 +175,13 @@ class kFoldCrossValidationRunner2:
             total=0
             self.temp=self.classify(self.deg,4)
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
-            
             random.shuffle(unpacked)
-            #print(len(unpacked))
             ransam=unpacked[0]
-            #del unpacked[0]
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
             deff={"arm":[], "kick":[], "neutral":[]}
             for i in unpacked:
                 if not i==unpacked[0]:
                     if i.label=='arm':
                         deff['arm'].append(i)
-                        #print("j.data", i.data)
                     elif i.label=='kick':
                         deff['kick'].append(i)
                     elif i.label=='neutral':
@@ -254,58 +189,15 @@ class kFoldCrossValidationRunner2:
             for i in deff:
                 if len(deff[i])==6:
                     del deff[i][0]
-            #print("Hello")
             count=0
-
-##                    print(len(p.data["F3"]))
-##                    for i in p.data["F3"]:
-##                             curr_avg=[]
-##                             for j in p.data:
-##                                 dat[j]=[]
-##                             for j in p.data:
-##                                 
-##                                 curr_avg.append(p.data[j][i])
-##                                 
-##                             subtract=statistics.mean(curr_avg)
-##                             for j in p.data:
-##                                 dat[j].append(p.data[j][i]-subtract)
-                  
-                    
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
-
-                #print(right, tota
-
             self.temp.train(deff)
-
             randat=ransam.data
-##            for i in range( len(ransam.data["F3"])):
-##                             curr_avg=[]
-##                             for j in ransam.data:
-##                                 randat[j]=[]
-##                             for j in ransam.data:
-##                                 curr_avg.append(ransam.data[j][i])
-##                             subtract=statistics.mean(curr_avg)
-##                             for j in ransam.data:
-##                                 randat[j].append(ransam.data[j][i]-subtract)
-            #print(self.temp.classify(randat), ransam.label)
             labs=[]
-            #print(self.temp.classify(randat))
             for i in self.temp.classify(randat):
                 labs.append(i[0])
             try:guess=statistics.mode(labs)
             except:guess="neutral"
             if guess==ransam.label:
-                
                 right+=1
             total+=1
             reslist.append(right/total)
@@ -325,105 +217,40 @@ class kFoldCrossValidationRunner2:
             unpacked=list()
             for b in self.actions:
                 unpacked+=self.dat[b]
-            #print(unpacked)
-            classlist={}
-            
+            classlist={} 
             total=0
-            #print('here')
             self.temp=self.classify(self.deg)
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
             random.shuffle(unpacked)
             ransam=unpacked[0]
-            
-            #del unpacked[0]
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
             todelete=[]
             for i in self.actions:
                 if not ransam.label==i:
                     todelete.append(i)
             ccc=0  
             del unpacked[0]
-##            while len(todelete)>0:
-##                ccc=0
-##                for i in unpacked:
-##                    if i.label in todelete:
-##                        del unpacked[ccc]
-##                        del todelete[todelete.index(i.label)]
-##                        break
-##                    else:
-##                        ccc+=1
-######                
-
-            
-##            print("neutral", sum(i.label=='neutral' for i in unpacked))
-##            print("arm", sum(i.label=='arm' for i in unpacked))
-##            print("kick", sum(i.label=='kick' for i in unpacked))
-##            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
-##            for j in FILE_LIST:
-##                lm=pickle.load(open(j, "rb"))
-##                for p in lm:
-##                        unpacked+=lm[p]
             count=0
-##            print(len(unpacked))
             for p in unpacked:
-                if True:
-                    #print(p)
-                    
+                if True:                    
                     self.temp.train({p.label:p.data})
-##            for j in self.temp.mat:
-##                for i in self.temp.mat[j]:
-##                    print(len(self.temp.mat[j][i]))
-                    
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
                 count+=1
-                #print(right, total
-            #print(self.temp.classify(ransam.data), ransam.label)
-            #print(self.temp.classify(ransam.data))
-            #self.temp.find_most_clustered([])
             eroor=Polyfit222.ErrorDetectionAlgorithm(self.temp, kfoldtraindata)
             guess=self.temp.smart_algo(ransam.data)
-            #print(guess[0][0])
             if guess[0][0]==ransam.label and eroor.classify(ransam.data)=='right':
-                #pol1.append(self.temp.classify_old(ransam.data)[0][1])
-                #print("Right")
                 pol1.append(guess[1])
                 right2.append(guess[2])
                 final_results.append(tuple((guess[1], guess[2], "right")))
-                #print(eroor.classify(ransam.data), bool(guess[0][0]==ransam.label))
                 right+=1
             elif not guess[0][0]==ransam.label and eroor.classify(ransam.data)=='wrong':
-                #print(guess, ransam.label)
                 pol2.append(guess[1])
                 wrong2.append(guess[2])
                 final_results.append(tuple((guess[1], guess[2], "wrong")))
-                #pol2.append(self.temp.classify_old(ransam.data)[0][1])
-                #print(eroor.classify(ransam.data), bool(guess[0][0]==ransam.label))
                 right+=1
                 pass
             else: pass
             total+=1
-            
             reslist.append(right/total)
         print(right)
-       # print(right2, wrong2)
-        #print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
-        #print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
-        
     def run_for_errors(self):
         classlist={}
         final_results=list()
@@ -437,99 +264,38 @@ class kFoldCrossValidationRunner2:
             unpacked=list()
             for b in self.actions:
                 unpacked+=self.dat[b]
-            #print(unpacked)
             classlist={}
             right=0
             total=0
-            #print('here')
             self.temp=self.classify(self.deg)
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
             random.shuffle(unpacked)
             ransam=unpacked[0]
-            
-            #del unpacked[0]
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
             todelete=[]
             for i in self.actions:
                 if not ransam.label==i:
                     todelete.append(i)
             ccc=0  
             del unpacked[0]
-##            while len(todelete)>0:
-##                ccc=0
-##                for i in unpacked:
-##                    if i.label in todelete:
-##                        del unpacked[ccc]
-##                        del todelete[todelete.index(i.label)]
-##                        break
-##                    else:
-##                        ccc+=1
-######                
-
-            
-##            print("neutral", sum(i.label=='neutral' for i in unpacked))
-##            print("arm", sum(i.label=='arm' for i in unpacked))
-##            print("kick", sum(i.label=='kick' for i in unpacked))
-##            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
-##            for j in FILE_LIST:
-##                lm=pickle.load(open(j, "rb"))
-##                for p in lm:
-##                        unpacked+=lm[p]
             count=0
-##            print(len(unpacked))
             for p in unpacked:
                 if True:
-                    #print(p)
-                    
                     self.temp.train({p.label:p.data})
-##            for j in self.temp.mat:
-##                for i in self.temp.mat[j]:
-##                    print(len(self.temp.mat[j][i]))
-                    
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
                 count+=1
-                #print(right, total
-            #print(self.temp.classify(ransam.data), ransam.label)
-            #print(self.temp.classify(ransam.data))
-            #self.temp.find_most_clustered([])
             guess=self.temp.smart_algo(ransam.data)
-            #print(guess[0][0])
             if guess[0][0]==ransam.label:
-                #pol1.append(self.temp.classify_old(ransam.data)[0][1])
-                #print("Right")
                 print(ransam.label, guess)
                 pol1.append(guess[1])
                 right2.append(guess[2])
                 final_results.append(tuple((guess[1], guess[2], "right")))
                 right+=1
             else:
-                #print(guess, ransam.label)
                 pol2.append(guess[1])
                 wrong2.append(guess[2])
                 final_results.append(tuple((guess[1], guess[2], "wrong")))
-                #pol2.append(self.temp.classify_old(ransam.data)[0][1])
-                pass
             total+=1
             
             reslist.append(right/total)
-       # print(right2, wrong2)
-        #print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
-        #print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
         return final_results
     def run4(self):
         classlist={}
@@ -542,302 +308,78 @@ class kFoldCrossValidationRunner2:
         wrong2=list()
         dt3file=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
         dt3dat=pickle.loads(dt3file.read())
-        #del dt3dat['neutral']
-        #del self.dat['neutral']
         right2=list()
         for i in range(self.k):
             unpacked=list()
             for b in self.actions:
                 unpacked+=self.dat[b]
-                #unpacked+=dt3dat[b]
-            #print(unpacked)
             classlist={}
-            #right=0
             total=0
-            #print('here')
             self.temp=self.classify(self.deg)
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
             random.shuffle(unpacked)
             ransam=unpacked[0]
             unpacked2=list()
             neutral_store=list()
-            #while ransam.label=="neutral":
-                #random.shuffle(unpacked)
-                #ransam=unpacked[0]
-            
-            #del unpacked[0]
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
-            #todelete=[]
-##            for i in self.actions:
-##                if not ransam.label==i:
-##                    todelete.append(i)
-##            ccc=0  
             del unpacked[0]
-##            while len(todelete)>0:
-##                ccc=0
-##                for i in unpacked:
-##                    if i.label in todelete:
-##                        del unpacked[ccc]
-##                        del todelete[todelete.index(i.label)]
-##                        break
-##                    else:
-##                        ccc+=1
-######                
-
-            
-##            print("neutral", sum(i.label=='neutral' for i in unpacked))
-##            print("arm", sum(i.label=='arm' for i in unpacked))
-##            print("kick", sum(i.label=='kick' for i in unpacked))
-##            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
-##            for j in FILE_LIST:
-##                lm=pickle.load(open(j, "rb"))
-##                for p in lm:
-##                        unpacked+=lm[p]
             count=0
-##            print(len(unpacked))
             for p in unpacked:
-                if True:
-                    #print(p)
-                    
+                if True:                  
                     self.temp.train({p.label:p.data})
-             
-##            for j in self.temp.mat:
-##                for i in self.temp.mat[j]:
-##                    print(len(self.temp.mat[j][i]))
-                    
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
                 count+=1
-                #print(right, total
-            #print(self.temp.classify(ransam.data), ransam.label)
-            #print(self.temp.classify(ransam.data))
-            #self.temp.find_most_clustered([])
-            #print(self.temp.mat)
             guess=self.temp.smart_algo_with_neutral(ransam.data)
-            #print(guess[0][0])
             if guess[0][0]==ransam.label:
-                #pol1.append(self.temp.classify_old(ransam.data)[0][1])
-                #print("Right")
-                #print(ransam.label)
-                #print(guess, ransam.label)
-                #pol1.append(guess[1])
-                #right2.append(guess[2])
-                #final_results.append(tuple((guess[1], guess[2], "right")))
                 right+=1
             else:
-                #print(guess, ransam.label)
-                #pol2.append(guess[1])
-                #wrong2.append(guess[2])
-                #print(guess, ransam.label)
-                #final_results.append(tuple((guess[1], guess[2], "wrong")))
-                #pol2.append(self.temp.classify_old(ransam.data)[0][1])
                 pass
             total+=1
         return right
     def run1data(self):
-        classlist={}
-        final_results=list()
-        #del self.actions[2]
         reslist=list()
-        errors=[]
-        pol1=[]
-        wrong2=[]
-        pol2=[]
-        wronglyassigned=list()
-        wronglyidentified=list()
-        right2=list()
         unpacked=list()
         for b in self.actions:
-            unpacked+=self.dat[b]
-        for i in range(18):
-            testsam=unpacked.pop(0)
-            classlist={}
-            right=0
-            total=0
-            self.temp=self.classify(self.deg)
-            traindict={}
-            unpacked2=list()
-            count=0
+            unpacked+=self.dat[b] #Make list for easy popping
+        for i in range(18):#18 times
+            testsam=unpacked.pop(0)#Pop
+            self.temp=self.classify(self.deg)#Initialize classifier.
             for p in unpacked:
                 if True:
-                    self.temp.train({p.label:p.data})     
-                count+=1
-            guess=self.temp.smart_algo(testsam.data)
+                    self.temp.train({p.label:p.data})     #Go through and train the classifier 
+            guess=self.temp.smart_algo(testsam.data) #Retrieve prediciton
             if guess[0][0]==testsam.label:
-                print("right")
-                right+=1
-            else:
-                wronglyassigned.append(guess[0][0])
-                #print(guess[0][0])
-                wronglyidentified.append(testsam.label)
-            total+=1
-            unpacked.append(testsam)
-            reslist.append(right/total)
-        return [(len(list(filter(lambda x:x==1, reslist)))/18)*100,errors]
+                reslist.append(1) #Test if it is correct
+            unpacked.append(testsam)#reappppend item to end of list
+        return [sum(reslist)]
     def run1(self):
-        classlist={}
-        final_results=list()
-        #del self.actions[2]
         reslist=list()
         errors=[]
         pol1=[]
         wrong2=[]
         pol2=[]
-        wronglyassigned=list()
-        wronglyidentified=list()
-        #dt3file=open("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr", "rb")
-        #dt3dat=pickle.loads(dt3file.read())
-        #del dt3dat['neutral']
-        #del self.dat['neutral']
         right2=list()
-        for i in range(self.k):
-            unpacked=list()
+        for i in range(self.k): #For number of times which the loop should occur.
+            unpacked=list() #List containing all of the Samples
             for b in self.actions:
-                unpacked+=self.dat[b]
-                #unpacked+=dt3dat[b]
-            #print(unpacked)
-            classlist={}
-            right=0
-            total=0
-            #print('here')
-            self.temp=self.classify(self.deg)
+                unpacked+=self.dat[b] #Take the samples out of bins.
+            self.temp=self.classify(self.deg) #initialize classifier.
             traindict={}
-            #for i  in self.actions:
-                #traindict[i]=random.sample(self.dat[i], 1)[0].data
-            random.shuffle(unpacked)
-            ransam=unpacked[0]
-            unpacked2=list()
-##            for i in unpacked:
-##                if not i.label=="neutral":
-##                    unpacked2.append(i)
-##            unpacked=unpacked2
-            #while ransam.label=="neutral":
-                #random.shuffle(unpacked)
-                #ransam=unpacked[0]
-            
-            #del unpacked[0]
-                #print(ransam)
-                #traindict[i]=ransam
-            #temp.train(traindict)
-            #classlist[j]=temp
+            random.shuffle(unpacked) #Shuffle the list randomly.
+            ransam=unpacked[0]#Pop the first item off the list.
             todelete=[]
             for i in self.actions:
                 if not ransam.label==i:
                     todelete.append(i)
             ccc=0  
-            del unpacked[0]
-##            while len(todelete)>0:
-##                ccc=0
-##                for i in unpacked:
-##                    if i.label in todelete:
-##                        del unpacked[ccc]
-##                        del todelete[todelete.index(i.label)]
-##                        break
-##                    else:
-##                        ccc+=1
-######                
-
-            
-##            print("neutral", sum(i.label=='neutral' for i in unpacked))
-##            print("arm", sum(i.label=='arm' for i in unpacked))
-##            print("kick", sum(i.label=='kick' for i in unpacked))
-##            FILE_LIST=["C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (3).kineegtr", "C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"]
-##            for j in FILE_LIST:
-##                lm=pickle.load(open(j, "rb"))
-##                for p in lm:
-##                        unpacked+=lm[p]
-            count=0
-##            print(len(unpacked))
+            del unpacked[0]#Delete the first element
             for p in unpacked:
                 if True:
-                    #print(p)
-                    
-                    self.temp.train({p.label:p.data})
-             
-##            for j in self.temp.mat:
-##                for i in self.temp.mat[j]:
-##                    print(len(self.temp.mat[j][i]))
-                    
-                #print("Hi")
-                #rint("Hi")
-                #print(p.data)
-                #res=[tuple((ki, classlist[ki].classify(p.data))) for ki in classlist]
-                #if temp.classify(p.data)[0]==p.label:
-                    
-                    #right+=1
-                #elif not p.label=='neutral':errors.append(p.label)
-                #print(res, p.label)
-                #if not p.label=="neutral":
-                
+                    self.temp.train({p.label:p.data}) #train the classifier with the unused data
                 count+=1
-                #print(right, total
-            #print(self.temp.classify(ransam.data), ransam.label)
-            #print(self.temp.classify(ransam.data))
-            #self.temp.find_most_clustered([])
-            #print(self.temp.mat)
-            guess=self.temp.smart_algo(ransam.data)
-            #print(guess[0][0])
-            if guess[0][0]==ransam.label:
-                #pol1.append(self.temp.classify_old(ransam.data)[0][1])
-                #print("Right")
-                #print(guess, ransam.label)
-                #pol1.append(guess[1])
-                #right2.append(guess[2])
-                #final_results.append(tuple((guess[1], guess[2], "right")))
-                right+=1
-            else:
-                wronglyassigned.append(guess[0][0])
-                #print(guess[0][0])
-                wronglyidentified.append(ransam.label)
-                #pol2.append(guess[1])
-                #wrong2.append(guess[2])
-                #print(guess, ransam.label)
-                #final_results.append(tuple((guess[1], guess[2], "wrong")))
-                #pol2.append(self.temp.classify_old(ransam.data)[0][1])
-                pass
-            total+=1
+            guess=self.temp.smart_algo(ransam.data)#Take the guess of the classifier.
+            if guess[0][0]==ransam.label:#Check whether it matches.
+                reslist.append(1)
             
-            reslist.append(right/total)
-        #print(right2, wrong2)
-        for i in ['neutral']:
-            count=0
-            for j in wronglyassigned:
-                if j==i:
-                    count+=1
-            print(i," ")
-            print("wronglyassigned", " ")
-            print(count)
-            for j in wronglyidentified:
-                count=0
-                if j==i:
-                    count+=1
-            print(i, " ")
-            print("wronglyidentified", " ")
-            print(count)
-            
-                
-                
-                
-            
-                
-        #print("Right"+str(statistics.mean(pol1))+" "+str(statistics.mean(right2)))
-        #print("Wrong"+str(statistics.mean(pol2))+" "+str(statistics.mean(wrong2)))
-        #len(list(filter(lambda x:x==1, reslist))),
-        return [right, errors]
+        return [sum(reslist), errors]
 
 class kFoldCrossValidationRunner:
     def __init__(self, k, classify,i):
@@ -948,9 +490,6 @@ def DataGather():
 if __name__=='__main__':
     #DataGather()
     print("KineticEEG kFoldCrossValidation2 Simulator")
-    
-    #outputFile = open('C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/kFold-{0}'.format(((FILENAME.split()[-1]).split(".")[0])+".csv"), 'w', newline='')
-    #outputWriter = csv.writer(outputFile)
     listy=[]
     res=[]
     for i in range(1,25):
