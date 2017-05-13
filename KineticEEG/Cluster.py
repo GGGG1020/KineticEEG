@@ -6,8 +6,8 @@ import ClassifyUtils
 import statistics
 import numpy.polynomial as poly
 from Polyfit222 import Sample
-deg=4
-filename="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/KineticEEGProgamFiles/Favorites/Trainingdata (14).kineegtr"
+deg=8
+filename="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
 fileobj=open(filename, "rb")
 results=dict()
 dat=pickle.loads(fileobj.read())
@@ -28,7 +28,7 @@ for i in actions:
         for p in itertools.combinations(mat[i][j], 2):
             initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
 
-        print(statistics.mean(initlist))
+        print(statistics.mean(initlist), statistics.stdev(initlist))
 ##import numpy as np
 ##import matplotlib.pyplot as plt
 ##
