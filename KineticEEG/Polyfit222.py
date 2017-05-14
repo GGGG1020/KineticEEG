@@ -79,43 +79,27 @@ class PolyBasedClassifier:
         rule={}
         boundarypoints={"arm":{}, 'kick':{}}
         for i in ['arm', 'kick']:
-            #print(i)
-            
             for j in self.mat[i]:
-                #print(mat[i][j])
                 initlist=[]
                 for p in itertools.combinations(self.mat[i][j], 2):
-                    #print(str(i+"v"+j))
                     initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[1].coef)))
-                #print(str(i+"v"+j))
                 boundarypoints[i][j]=initlist
                 matp[j].append(statistics.mean(initlist))
-                
-            #for b in matp:
-            #print(len(self.mat['kick']['FC5']))
         for i in ['arm', 'kick','neutral']:
             minst=min(matp, key=lambda x:statistics.mean(matp[x]))
-            #print(minst)
             matr=numpy.matrix([i.coef for i in self.mat[i][minst]])
             final=list()
-            #rule[minst]=[]
             for j in matr.T:
-                #print(j)
                 final.append(statistics.mean(numpy.array(j).flatten()))
-                #print(Final")
             rule[i]={minst:final}
         for p in data:
             mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))
         for d in ['arm', 'kick']:
-            #print(d)
             for tt in rule[d]:
                 sum1=0
-                #for ppp in rule[d][tt]:
                 sum1+=ClassifyUtils.euclideandistance(mat2[tt].coef, rule[d][tt],len(rule[d][tt]))
                 throttle[d]=(sum1/1)
-        #print(boundarypoints)
         if throttle[min(throttle, key=lambda x:throttle[x])]>(numpy.percentile(boundarypoints[min(throttle, key=lambda x:throttle[x])][minst],95)+(2*statistics.stdev(boundarypoints[min(throttle, key=lambda x:throttle[x])][minst]))):
-            #print("Hi")
             return [["neutral"]]
         return [[min(throttle, key=lambda x:throttle[x])], throttle[min(throttle, key=lambda x:throttle[x])]-throttle[sorted(throttle, key=lambda x:throttle[x])[1]],throttle[min(throttle, key=lambda x:throttle[x])] ]
     def smart_algo(self, data):    
@@ -220,13 +204,9 @@ class MultiLiveClassifierApplication:
         for b in self.dict_data:
             unpacked+=self.dict_data[b]
         self.classif=PolyBasedClassifier(12)
-        #for q in self.dict_data:
-           # self.classif.train(self.dict_data[q])
         self.processer=process2
         for j in unpacked:
             self.classif.train({j.label: j.data})
-        #self.thresh,self.d=self.calculate_thresh()
-        #print("#####THRESHOLD="+str(self.thresh))
         self.system_up_time=0
     def calculate_thresh(self):
           thresh_select=list()
@@ -314,7 +294,7 @@ class MultiLiveClassifierApplication:
                 for i in data_dict:
                     data_dict[i].append(data[i][0][2])
                 countr=countr+1
-                if len(data_dict["F3"])==32:                   #print("In Detector")
+                if len(data_dict["F3"])==32:                
                     for i in data_dict:
                         del data_dict[i][0]
                     if (countr%4)==0:
