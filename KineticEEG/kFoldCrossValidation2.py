@@ -8,6 +8,7 @@ import numpy
 import statistics
 import Polyfit222
 import BaseEEG
+import CrossCorrelationAlgorithm
 import matplotlib.pyplot as plt
 import multiprocessing
 import math
@@ -17,7 +18,7 @@ import ctypes
 #lucky fly.pt
 import pickle
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (17).kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix):
@@ -341,11 +342,28 @@ class kFoldCrossValidationRunner2:
             unpacked+=self.dat[b] #Make list for easy popping
         for i in range(18):#18 times
             testsam=unpacked.pop(0)#Pop
-            self.temp=self.classify(self.deg)#Initialize classifier.
+            self.temp=self.classify(self.deg)#Initalize classifier.
+            exclude=list()
+            #print(unpacked)
+##            for r in ['arm', 'kick', 'neutral']:
+##                if not r==testsam.label:
+##                    count=0
+##                    for de in unpacked:
+##                        #int(de)
+##                        if de.label==r:
+##                            break
+##                        count+=1
+##                    #unpacked.pop(count)
+##                    exclude.append(count)
+##            #print(exclude)
+            count2=0          
             for p in unpacked:
-                if True:
-                    self.temp.train({p.label:p.data})     #Go through and train the classifier 
+                if not count2 in exclude:
+                    self.temp.train({p.label:p.data})     #Go through and train the classifier
+                count2+=1
+            
             guess=self.temp.smart_algo(testsam.data) #Retrieve prediciton
+            print(guess, testsam.label)
             if guess[0][0]==testsam.label:
                 reslist.append(1) #Test if it is correct
             unpacked.append(testsam)#reappppend item to end of list
@@ -374,7 +392,7 @@ class kFoldCrossValidationRunner2:
             for p in unpacked:
                 if True:
                     self.temp.train({p.label:p.data}) #train the classifier with the unused data
-            guess=self.temp.smart_algo(ransam.data)#Take the guess of the classifier.
+            guess=self.temp.smart_algo_knearest(ransam.data)#Take the guess of the classifier.
             if guess[0][0]==ransam.label:#Check whether it matches.
                 reslist.append(1)
             
@@ -493,7 +511,7 @@ if __name__=='__main__':
     res=[]
     for i in range(1,25):
         valrunner=kFoldCrossValidationRunner2(100, Polyfit222.PolyBasedClassifier, i, FILENAME)
-        pl=valrunner.run1()
+        pl=valrunner.run1data()
         #valrunner.test_for_error_system()
         print(pl)
         um=0

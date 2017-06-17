@@ -1,4 +1,4 @@
-#Plots.py
+####Cross Correlation Based######
 
 import matplotlib.pyplot
 import pickle
@@ -11,79 +11,9 @@ import numpy.polynomial as poly
 import matplotlib.pyplot as plt
 
 import numpy
-class Sample:
-    def __init__(self, label, data):
-        self.data=data
-        self.label=label
-    def euclidean_distance_between(self, other):
-        tote=0
-        for i in self.data:
-            tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
-        return tote
-#Load files
-def average_distance_from_rulevector(filename, deg):
-    fileobj=open(filename, "rb")
-    results=dict()
-    dat=pickle.loads(fileobj.read())
-    labels=list()
-    data=list()
-    actions=["arm", "kick",'neutral']
-    data_to_plot=[]
-    distance_data=dict()
-    for i in actions:
-        distance_data[i]=[]
-    labels=[]
-    rule=dict()
-    average_clustering={"F3":[], "F4":[], "FC5":[], "FC6":[]}
-    mat=dict()
-    for i in actions:results.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
-    for i in actions:mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
-    for b in actions:
-        for c in dat[b]:
-            #for j in c.data:
-                for p in c.data:
-                    mat[b][p].append(poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(c.data[p]))), c.data[p], deg)))
-                    
-    #print(len(mat['kick']['F3']))
-    for i in ['arm', 'kick', 'neutral']:
-        for q in mat[i]:
-            initlist=[]
-            for p in itertools.combinations(mat[i][q], 2):
-                print(p)
-                initlist.append(ClassifyUtils.euclideandistance(p[0].coef, p[1].coef, len(p[0].coef)))
-            average_clustering[q].append(statistics.mean(initlist))
-    for i in ['arm', 'kick', 'neutral']:
-        #print(average_clustering)
-        minimum_sensor=min(average_clustering, key=lambda x:statistics.mean(average_clustering[x]))
-        #print(minimum_sensor)
-        matr=numpy.matrix([p.coef for p in mat[i][minimum_sensor]])
-        finalrule=list()
-        for j in matr.T:
-            finalrule.append(statistics.mean(numpy.array(j).flatten()))
-        rule[i]={minimum_sensor:finalrule}
-    for action_to_test in ['arm', 'kick', 'neutral']:
-        
-        for sample in mat[action_to_test][list(rule[action_to_test].keys())[0]]:
-            #print(sample)
-            #print("Action to test", rule[action_to_test])
-            labels.append(action_to_test)
-            #data.append(ClassifyUtils.euclideandistance(rule[action_to_test][list(rule[action_to_test].keys())[0]], sample.coef, len(sample.coef)))
-            distance_data[action_to_test].append(ClassifyUtils.euclideandistance(rule[action_to_test][list(rule[action_to_test].keys())[0]], sample.coef, len(sample.coef)))
-            
-    ##Make the Plot
-    plt.suptitle("Distance to Rule Vector from Samples")
-    fig=plt.figure(1, figsize=(20,6))
-    ax=fig.add_subplot(111)
-    for i in ['arm', 'kick', 'neutral']:
-        data.append([distance_data[i]])
-    print(len(data))
-    bp=ax.boxplot(data, labels=['arm', 'kick', 'neutral'])
-    fig.show()
-    
-    
-            
-            
-        
+
+
+
 def normalized_cross_correlation(sig1,sig2):
 	numerator=0
 	for i in range(len(sig1)):
@@ -95,10 +25,65 @@ def normalized_cross_correlation(sig1,sig2):
 		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
 	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
 	return numerator/denominator 
+        
+        
+
+
+class CrossCorrelationClassifier:
+    def __init__(self,degree, actions=['arm', 'kick', 'neutral']):
+        self.actions=actions
+        self.mat=dict()
+        for i in self.actions:self.mat.update({i:{"F3":[], "F4":[], "FC5":[], "FC6":[]}})
+    def train(self,data):
+        for pvnrt in data:
+            for q in data[pvnrt]:
+                self.mat[pvnrt][q].append(data[pvnrt][q])
+    def classify(self, data):
+        meanlist={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
+        std_dict={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
+        min_dict={"arm":{}, "kick":{}, "neutral":{}}
+        main_dict={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
+
+        for p in self.mat:
+            for j in self.mat[p]:
+                average_matrix=numpy.matrix([t for t in self.mat[p][j]])
+                final_list=list()#Average all the signals
+                std=list()#Hold the standard deviations of all the signals.
+            
+                for pro in average_matrix.T:
+                    #print(i.flatten().tolist())
+                    final_list.append(statistics.median(pro.tolist()[0]))
+                    #std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.median(pro.tolist()[0])))
+                for psq1,psq2 in itertools.combinations(average_matrix,2):
+                    std.append(normalized_cross_correlation(sum(psq1.tolist(),[]), sum(psq2.tolist(), [])))
+                meanlist[p][j]=final_list
+                #print(i+j, str(str(statistics.mean(std))+"+/-"+str(statistics.stdev(std))))
+                std_dict[p][j]=statistics.mean(std)
+
+        for i in std_dict:
+            sens=max(std_dict[i], key=lambda x:std_dict[i][x])
+            min_dict[i][sens]=meanlist[i][sens]
+            #print(numpy.polyfit(range(0, len(meanlist[i][sens])), meanlist[i][sens], 1))        
+        for q in data:
+            print(q)
+            selector={}
+            for mint in min_dict:
+                for sensor in min_dict[mint]:
+                    selector[mint]=normalized_cross_correlation(data[q], min_dict[mint][sensor])
+                    #print(sensor, mint)
+                    #print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
+            return [[max(selector, key=lambda x:selector[x])]]
+    def smart_algo(self, data):
+        return self.classify(data)
                 
+                            
+
+                    
+            
+                    
         
-        
-        
+
+
 def run_clusteringplot(filename,deg):
     fileobj=open(filename, "rb")
     results=dict()
@@ -158,11 +143,10 @@ def run_data_plot(filename):
             
             for pro in average_matrix.T:
                 #print(i.flatten().tolist())
-                final_list.append(statistics.mean(pro.tolist()[0]))
+                final_list.append(statistics.median(pro.tolist()[0]))
                 #std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.median(pro.tolist()[0])))
             for psq1,psq2 in itertools.combinations(average_matrix,2):
                 std.append(normalized_cross_correlation(sum(psq1.tolist(),[]), sum(psq2.tolist(), [])))
-            print(std)
             meanlist[i][j]=final_list
             #print(i+j, str(str(statistics.mean(std))+"+/-"+str(statistics.stdev(std))))
             std_dict[i][j]=statistics.mean(std)
@@ -194,7 +178,10 @@ def run_data_plot(filename):
             selector={}
             for mint in min_dict:
                 for sensor in min_dict[mint]:
-                    selector[mint]=normalized_cross_correlation(q.data[sensor], min_dict[mint][sensor])
+                    recordlist=list()
+                    for example in maindict[mint][sensor]:
+                        recordlist.append(normalized_cross_correlation(q.data[sensor], example))
+                    selector[mint]=statistics.median(recordlist)#normalized_cross_correlation(q.data[sensor], min_dict[mint][sensor])
                     #print(sensor, mint)
                     #print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
             print(d, max(selector, key=lambda x:selector[x]))
@@ -204,22 +191,3 @@ def run_data_plot(filename):
         #pt=numpy.polyfit(range(0, len(meanlist[i][sens])), meanlist[i][sens], 4)
         #print(i+sens, pt)
     plt.show()
-    
-def normalized_cross_correlation(sig1,sig2):
-	numerator=0
-	for i in range(len(sig1)):
-		numerator+=((sig1[i]-statistics.mean(sig1))*(sig2[i]-statistics.mean(sig2)))
-	sig2denominator=0
-	sig1denom=0
-	for j in range(len(sig1)):
-		sig2denominator+=pow((sig2[j]-statistics.mean(sig2)), 2)
-		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
-	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
-	return numerator/denominator 
-        
-        
-
-
-if __name__=='__main__':
-    run_data_plot("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (17).kineegtr")
-    #run_data_plot("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr")
