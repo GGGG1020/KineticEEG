@@ -18,7 +18,7 @@ import ctypes
 #lucky fly.pt
 import pickle
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix):
@@ -510,7 +510,7 @@ if __name__=='__main__':
     listy=[]
     res=[]
     for i in range(1,25):
-        valrunner=kFoldCrossValidationRunner2(100, Polyfit222.PolyBasedClassifier, i, FILENAME)
+        valrunner=kFoldCrossValidationRunner2(100, CrossCorrelationAlgorithm.CrossCorrelationClassifier, i, FILENAME)
         pl=valrunner.run1data()
         #valrunner.test_for_error_system()
         print(pl)

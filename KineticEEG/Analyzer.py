@@ -20,12 +20,12 @@ from tkinter import filedialog
 def normalized_cross_correlation(sig1,sig2):
 	numerator=0
 	for i in range(len(sig1)):
-		numerator+=((sig1[i]-statistics.mean(sig1))*(sig2[i]-statistics.mean(sig2)))
+		numerator+=((sig1[i])*(sig2[i]))
 	sig2denominator=0
 	sig1denom=0
 	for j in range(len(sig1)):
-		sig2denominator+=pow((sig2[j]-statistics.mean(sig2)), 2)
-		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
+		sig2denominator+=pow(sig2[j], 2)
+		sig1denom+=pow(sig1[j], 2)
 	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
 	return numerator/denominator 
 jk=filedialog.askopenfile(initialdir="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/")
@@ -51,6 +51,7 @@ for i in main_dict:
         for q,r in itertools.combinations(main_dict[i][p],2):
             #print(i,p)
             listofcrosscorr.append(normalized_cross_correlation(q,r))
+            #print(listofcrosscorr)
         print(statistics.mean(listofcrosscorr), i+p) 
 print("Cross Correlation Value Between Two Sensors")
 for i,k in itertools.combinations(['arm', 'kick', 'neutral'], 2):
@@ -59,8 +60,13 @@ for i,k in itertools.combinations(['arm', 'kick', 'neutral'], 2):
         for q1 in main_dict[i][s1]:
             for q2 in main_dict[k][s1]:
                 reclist.append(normalized_cross_correlation(q1,q2))
+                #print(reclist)
         print(statistics.mean(reclist), (i+s1)+" "+(k+s1))
-    
+print("Polyfit Averages")
+for i in main_dict:
+        for p in main_dict[i]:
+                average_matrix=numpy.matrix([t for t in main_dict[i][p]])
+                for 
             
                 
 

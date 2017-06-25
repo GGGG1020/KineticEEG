@@ -91,8 +91,8 @@ def normalized_cross_correlation(sig1,sig2):
 	sig2denominator=0
 	sig1denom=0
 	for j in range(len(sig1)):
-		sig2denominator+=pow((sig2[j]-statistics.mean(sig2)), 2)
-		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
+		sig2denominator+=pow(sig2[j], 2)
+		sig1denom+=pow(sig1[j], 2)
 	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
 	return numerator/denominator 
                 
@@ -152,23 +152,29 @@ def run_data_plot(filename):
             for t in main_dict[i][j]:
                 #plt.plot(t)
                 pass
+            #ax.plot(meanlist[i][sens], label="Mean")
+            #legend = ax.legend(loc='upper center', shadow=True)
+                
+            
+            #plt.suptitle(i+j)
+   
             average_matrix=numpy.matrix([t for t in main_dict[i][j]])
             final_list=list()#Average all the signals
             std=list()#Hold the standard deviations of all the signals.
             
             for pro in average_matrix.T:
                 #print(i.flatten().tolist())
-                final_list.append(statistics.mean(pro.tolist()[0]))
-                #std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.median(pro.tolist()[0])))
-            for psq1,psq2 in itertools.combinations(average_matrix,2):
-                std.append(normalized_cross_correlation(sum(psq1.tolist(),[]), sum(psq2.tolist(), [])))
+                final_list.append(statistics.median(pro.tolist()[0]))
+                std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.mean(pro.tolist()[0])))
+            #for psq1,psq2 in itertools.combinations(average_matrix,2):
+                #std.append(normalized_cross_correlation(sum(psq1.tolist(),[]), sum(psq2.tolist(), [])))
             print(std)
             meanlist[i][j]=final_list
             #print(i+j, str(str(statistics.mean(std))+"+/-"+str(statistics.stdev(std))))
             std_dict[i][j]=statistics.mean(std)
 
                 
-
+    #plt.draw()i=
     for i in std_dict:
         #print(std_dict[i])
         #print(max(std_dict[i], key=lambda x:std_dict[i][x]))
@@ -196,7 +202,7 @@ def run_data_plot(filename):
                 for sensor in min_dict[mint]:
                     selector[mint]=normalized_cross_correlation(q.data[sensor], min_dict[mint][sensor])
                     #print(sensor, mint)
-                    #print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
+                    print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
             print(d, max(selector, key=lambda x:selector[x]))
             
         
@@ -204,16 +210,15 @@ def run_data_plot(filename):
         #pt=numpy.polyfit(range(0, len(meanlist[i][sens])), meanlist[i][sens], 4)
         #print(i+sens, pt)
     plt.show()
-    
 def normalized_cross_correlation(sig1,sig2):
 	numerator=0
 	for i in range(len(sig1)):
-		numerator+=((sig1[i]-statistics.mean(sig1))*(sig2[i]-statistics.mean(sig2)))
+		numerator+=(sig1[i])*(sig2[i])
 	sig2denominator=0
 	sig1denom=0
 	for j in range(len(sig1)):
-		sig2denominator+=pow((sig2[j]-statistics.mean(sig2)), 2)
-		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
+		sig2denominator+=pow(sig1[j]-statistics.mean(sig1), 2)
+		sig1denom+=pow(sig2[j]-statistics.mean(sig2), 2)
 	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
 	return numerator/denominator 
         

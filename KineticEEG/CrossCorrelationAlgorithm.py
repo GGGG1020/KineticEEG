@@ -11,23 +11,40 @@ import numpy.polynomial as poly
 import matplotlib.pyplot as plt
 
 import numpy
-
+class Sample:
+    def __init__(self, label, data):
+        self.data=data
+        self.label=label
+    def euclidean_distance_between(self, other):
+        tote=0
+        for i in self.data:
+            tote+=ClassifyUtils.euclideandistance(self.data[i].coef, other.data[i].coef, len(self.data[i].coef))
+        return tote
 
 
 def normalized_cross_correlation(sig1,sig2):
 	numerator=0
 	for i in range(len(sig1)):
-		numerator+=((sig1[i]-statistics.mean(sig1))*(sig2[i]-statistics.mean(sig2)))
+		numerator+=((sig1[i])*(sig2[i]))
 	sig2denominator=0
 	sig1denom=0
 	for j in range(len(sig1)):
-		sig2denominator+=pow((sig2[j]-statistics.mean(sig2)), 2)
-		sig1denom+=pow((sig2[j]-statistics.mean(sig2)), 2)
+		sig2denominator+=pow(sig2[j], 2)
+		sig1denom+=pow(sig1[j], 2)
 	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
 	return numerator/denominator 
+def normalized_cross_correlation(sig1,sig2):
+	numerator=0
+	for i in range(len(sig1)):
+		numerator+=(sig1[i])*(sig2[i])
+	sig2denominator=0
+	sig1denom=0
+	for j in range(len(sig1)):
+		sig2denominator+=pow((sig2[j]), 2)
+		sig1denom+=pow((sig1[j]), 2)
+	denominator=pow(sig2denominator, 0.5)*pow(sig1denom, 0.5)
+	return numerator/denominator         
         
-        
-
 
 class CrossCorrelationClassifier:
     def __init__(self,degree, actions=['arm', 'kick', 'neutral']):
@@ -42,6 +59,7 @@ class CrossCorrelationClassifier:
         meanlist={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
         std_dict={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
         min_dict={"arm":{}, "kick":{}, "neutral":{}}
+        by_sensor={"F3":[], "F4":[], 'FC5':[], "FC6":[]}
         main_dict={"arm":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "kick":{"F3":[], "F4":[], "FC5":[], "FC6":[]}, "neutral":{"F3":[], "F4":[], "FC5":[], "FC6":[]}}
 
         for p in self.mat:
@@ -59,20 +77,28 @@ class CrossCorrelationClassifier:
                 meanlist[p][j]=final_list
                 #print(i+j, str(str(statistics.mean(std))+"+/-"+str(statistics.stdev(std))))
                 std_dict[p][j]=statistics.mean(std)
+        for qrt in self.mat:
+                for pst in self.mat[qrt]:
+                        for j in self.mat[qrt][pst]:
+                                by_sensor[pst].append(Sample(qrt,j))
 
         for i in std_dict:
             sens=max(std_dict[i], key=lambda x:std_dict[i][x])
             min_dict[i][sens]=meanlist[i][sens]
             #print(numpy.polyfit(range(0, len(meanlist[i][sens])), meanlist[i][sens], 1))        
         for q in data:
-            print(q)
+            #print(q)
             selector={}
             for mint in min_dict:
                 for sensor in min_dict[mint]:
+                
                     selector[mint]=normalized_cross_correlation(data[q], min_dict[mint][sensor])
+                    #pred=max(by_sensor[sensor], key=lambda x:normalized_cross_correlation(data[q], x.data))
                     #print(sensor, mint)
                     #print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
-            return [[max(selector, key=lambda x:selector[x])]]
+        return [[max(selector, key=lambda x:selector[x])]]
+        #return [[pred.label]]
+
     def smart_algo(self, data):
         return self.classify(data)
                 
