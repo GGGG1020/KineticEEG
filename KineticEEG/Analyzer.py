@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from Polyfit222 import Sample
 import numpy
 import tkinter
+import fastdtw
 from tkinter import filedialog
 
 ####Load file
@@ -44,30 +45,25 @@ for i in dat:
     for p in dat[i]:
         for d in p.data:
             main_dict[i][d].append(p.data[d])
-print("Average Pairwise Cross-Correlation Value")
+print("Average Pairwise Time-Warp Value")
 for i in main_dict:
     for p in main_dict[i]:
         listofcrosscorr=list()
         for q,r in itertools.combinations(main_dict[i][p],2):
             #print(i,p)
-            listofcrosscorr.append(normalized_cross_correlation(q,r))
+            listofcrosscorr.append((fastdtw.dtw(q,r)[0])/statistics.mean([statistics.mean(q),statistics.mean(r)]))
             #print(listofcrosscorr)
         print(statistics.mean(listofcrosscorr), i+p) 
-print("Cross Correlation Value Between Two Sensors")
+print("Timewarp Value Between Two Sensors")
 for i,k in itertools.combinations(['arm', 'kick', 'neutral'], 2):
     for s1 in ['FC5', "F3", "F4", "FC6"]:
         reclist=list()
         for q1 in main_dict[i][s1]:
             for q2 in main_dict[k][s1]:
-                reclist.append(normalized_cross_correlation(q1,q2))
+                reclist.append(abs((fastdtw.dtw(q1,q2)[0])/statistics.mean([statistics.mean(q1),statistics.mean(q2)])))
                 #print(reclist)
         print(statistics.mean(reclist), (i+s1)+" "+(k+s1))
-print("Polyfit Averages")
-for i in main_dict:
-        for p in main_dict[i]:
-                average_matrix=numpy.matrix([t for t in main_dict[i][p]])
-                for 
-            
+
                 
 
 

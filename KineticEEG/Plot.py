@@ -5,11 +5,12 @@ import pickle
 import numpy
 import itertools
 import ClassifyUtils
+import DBA
 import statistics
 import numpy.polynomial as poly
 #from Polyfit222 import Sample
 import matplotlib.pyplot as plt
-
+import fastdtw
 import numpy
 class Sample:
     def __init__(self, label, data):
@@ -164,10 +165,11 @@ def run_data_plot(filename):
             
             for pro in average_matrix.T:
                 #print(i.flatten().tolist())
-                final_list.append(statistics.median(pro.tolist()[0]))
-                std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.mean(pro.tolist()[0])))
-            #for psq1,psq2 in itertools.combinations(average_matrix,2):
-                #std.append(normalized_cross_correlation(sum(psq1.tolist(),[]), sum(psq2.tolist(), [])))
+                final_list.append(statistics.mean(pro.tolist()[0]))
+                #std.append(abs(statistics.stdev(pro.tolist()[0])/statistics.mean(pro.tolist()[0])))
+                pass
+            for psq1,psq2 in itertools.combinations(average_matrix,2):
+                std.append((fastdtw.dtw(sum(psq1.tolist(),[]), sum(psq2.tolist(), []))[0]))#/abs(statistics.mean([statistics.mean(sum(psq1.tolist(),[])), statistics.mean(sum(psq2.tolist(), []))])))
             print(std)
             meanlist[i][j]=final_list
             #print(i+j, str(str(statistics.mean(std))+"+/-"+str(statistics.stdev(std))))
@@ -178,12 +180,17 @@ def run_data_plot(filename):
     for i in std_dict:
         #print(std_dict[i])
         #print(max(std_dict[i], key=lambda x:std_dict[i][x]))
-        sens=max(std_dict[i], key=lambda x:std_dict[i][x])
-        #print(sens)
+        sens=min(std_dict[i], key=lambda x:std_dict[i][x])
+        #print("I:",i)
         plt.figure()
         fig,  ax=plt.subplots()
         for pvnrt in main_dict[i][sens]:
             plt.plot(pvnrt)
+            #print("VNRT",pvnrt)
+        #tseries=[numpy.array(i) for i in main_dict[i][sens]]
+        #print(tseries)
+        #dba=DBA.DBA(30)
+        #dba_avg=dba.compute_average(tseries)
         ax.plot(meanlist[i][sens], label="Mean")
         legend = ax.legend(loc='upper center', shadow=True)
                 
@@ -200,10 +207,12 @@ def run_data_plot(filename):
             selector={}
             for mint in min_dict:
                 for sensor in min_dict[mint]:
-                    selector[mint]=normalized_cross_correlation(q.data[sensor], min_dict[mint][sensor])
+                    #print("Average", statistics.mean(q.data[sensor]))
+                    #print("Average", statistics.mean(min_dict[mint][sensor]))
+                    selector[mint]=(fastdtw.dtw(q.data[sensor], min_dict[mint][sensor])[0])#/abs(statistics.mean([float(statistics.mean(q.data[sensor])), float(statistics.mean(min_dict[mint][sensor]))]))
                     #print(sensor, mint)
                     print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
-            print(d, max(selector, key=lambda x:selector[x]))
+            print(d, min(selector, key=lambda x:selector[x]))
             
         
                            
@@ -226,5 +235,5 @@ def normalized_cross_correlation(sig1,sig2):
 
 
 if __name__=='__main__':
-    run_data_plot("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (17).kineegtr")
+    run_data_plot("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (16).kineegtr")
     #run_data_plot("C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr")

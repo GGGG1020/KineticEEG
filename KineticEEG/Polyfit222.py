@@ -132,7 +132,7 @@ class PolyBasedClassifier:
             rule[i]={minst:matr}
         for p in data: #Exit Training phase, begin work on live data.
             mat2[p]=poly.polynomial.Polynomial(poly.polynomial.polyfit(list(range(len(data[p]))), data[p], self.deg))#Featurize(find the polynomial fit of) the data
-        
+        print(rule)
         for d in rule: #Classification phase-Iterate over actions
             for tt in rule[d]: #Iterate over sensor(ONly one sensor, no true iteration)
                 sum1=0#Assign variable

@@ -15,13 +15,14 @@ import math
 import random
 import time
 import ctypes
-#lucky fly.pt
+
 import pickle
+import DTWAlg
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata.kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
-    def __init__(self, classifier, averages_matrix):
+    def __init__(self, classifier, averages_matrix): 
         self.classifier=classifier
     def predict_error(self, sm):
         result=self.classifier.smart_algo(sm)
@@ -344,6 +345,7 @@ class kFoldCrossValidationRunner2:
             testsam=unpacked.pop(0)#Pop
             self.temp=self.classify(self.deg)#Initalize classifier.
             exclude=list()
+            #print(testsam.data)
             #print(unpacked)
 ##            for r in ['arm', 'kick', 'neutral']:
 ##                if not r==testsam.label:
@@ -392,7 +394,7 @@ class kFoldCrossValidationRunner2:
             for p in unpacked:
                 if True:
                     self.temp.train({p.label:p.data}) #train the classifier with the unused data
-            guess=self.temp.smart_algo_knearest(ransam.data)#Take the guess of the classifier.
+            guess=self.temp.smart_algo(ransam.data)#Take the guess of the classifier.
             if guess[0][0]==ransam.label:#Check whether it matches.
                 reslist.append(1)
             
@@ -509,8 +511,8 @@ if __name__=='__main__':
     print("KineticEEG kFoldCrossValidation2 Simulator")
     listy=[]
     res=[]
-    for i in range(1,25):
-        valrunner=kFoldCrossValidationRunner2(100, CrossCorrelationAlgorithm.CrossCorrelationClassifier, i, FILENAME)
+    for i in range(20):
+        valrunner=kFoldCrossValidationRunner2(1, Polyfit222.PolyBasedClassifier, i, FILENAME)
         pl=valrunner.run1data()
         #valrunner.test_for_error_system()
         print(pl)
