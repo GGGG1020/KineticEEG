@@ -9,7 +9,7 @@ import numpy
 from numpy import *
 import time
 from ctypes.util import find_library
-os.chdir("C:/Program Files (x86)/Emotiv Research Edition SDK v2.0.0.20/dll/32 bit/")
+os.chdir("C:/Program Files (x86)/Emotiv Research Edition SDK v2.0.0.20/Applications")
 libEDK = cdll.LoadLibrary("edk.dll")
 def run_data_getter_processer(q):
     j=EmotivDataGetter()

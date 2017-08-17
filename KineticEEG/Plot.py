@@ -5,7 +5,7 @@ import pickle
 import numpy
 import itertools
 import ClassifyUtils
-import DBA
+#import DBA
 import statistics
 import numpy.polynomial as poly
 #from Polyfit222 import Sample
@@ -149,15 +149,15 @@ def run_data_plot(filename):
     for i in main_dict:
         for j in main_dict[i]:
             #plt.figure()
-            #fig, ax=plt.subplots()
+            fig, ax=plt.subplots()
             for t in main_dict[i][j]:
-                #plt.plot(t)
+                plt.plot(t)
                 pass
-            #ax.plot(meanlist[i][sens], label="Mean")
-            #legend = ax.legend(loc='upper center', shadow=True)
+            #x.plot(meanlist[i][], label="Mean")
+            legend = ax.legend(loc='upper center', shadow=True)
                 
             
-            #plt.suptitle(i+j)
+            plt.suptitle(i+j)
    
             average_matrix=numpy.matrix([t for t in main_dict[i][j]])
             final_list=list()#Average all the signals
@@ -176,11 +176,12 @@ def run_data_plot(filename):
             std_dict[i][j]=statistics.mean(std)
 
                 
-    #plt.draw()i=
+    plt.draw()
     for i in std_dict:
         #print(std_dict[i])
         #print(max(std_dict[i], key=lambda x:std_dict[i][x]))
         sens=min(std_dict[i], key=lambda x:std_dict[i][x])
+        print(sens)
         #print("I:",i)
         plt.figure()
         fig,  ax=plt.subplots()
@@ -211,7 +212,8 @@ def run_data_plot(filename):
                     #print("Average", statistics.mean(min_dict[mint][sensor]))
                     selector[mint]=(fastdtw.dtw(q.data[sensor], min_dict[mint][sensor])[0])#/abs(statistics.mean([float(statistics.mean(q.data[sensor])), float(statistics.mean(min_dict[mint][sensor]))]))
                     #print(sensor, mint)
-                    print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 1), sensor)
+                    print(numpy.polyfit(range(0, len(q.data[sensor])), q.data[sensor], 0), sensor)
+                    
             print(d, min(selector, key=lambda x:selector[x]))
             
         

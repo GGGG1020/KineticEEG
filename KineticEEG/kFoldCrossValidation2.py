@@ -15,11 +15,11 @@ import math
 import random
 import time
 import ctypes
-
+import DTWKNN
 import pickle
 import DTWAlg
 import csv
-FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Favorites/Trainingdata (2).kineegtr"
+FILENAME="C:/Users/Gaurav/Desktop/KineticEEGProgamFiles/Trainingdata.kineegtr"
 kernel=ctypes.windll.kernel32   
 class ErrorDetectionAlgorithm:
     def __init__(self, classifier, averages_matrix): 
@@ -511,8 +511,8 @@ if __name__=='__main__':
     print("KineticEEG kFoldCrossValidation2 Simulator")
     listy=[]
     res=[]
-    for i in range(20):
-        valrunner=kFoldCrossValidationRunner2(1, Polyfit222.PolyBasedClassifier, i, FILENAME)
+    for i in range(40):
+        valrunner=kFoldCrossValidationRunner2(1, CrossCorrelationAlgorithm.CrossCorrelationClassifier, i, FILENAME)
         pl=valrunner.run1data()
         #valrunner.test_for_error_system()
         print(pl)
