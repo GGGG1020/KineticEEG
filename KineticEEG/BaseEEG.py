@@ -1,3 +1,6 @@
+###This contains the code used to communicate with the Emotiv EEG headset and recieve data. Additionally this is the code used to preprocess the data.
+
+
 import ctypes
 import sys
 import os
@@ -106,7 +109,7 @@ class EmotivDataGetter:
                         if self.nSamplesTaken[0] != 0:#Check that some samples have been taken
                             self.nSam=self.nSamplesTaken[0]
                             arr=(ctypes.c_double*self.nSamplesTaken[0])()#Allocate memory
-                            ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)) #I don't know what this does but Emotiv does it.....                     
+                            ctypes.cast(arr, ctypes.POINTER(ctypes.c_double)) 
                             data = array('d')
                             useless=list(self.targetChannelList.keys())
                             for sampleIdx in range(self.nSamplesTaken[0]): #For each sample taken.
@@ -282,6 +285,7 @@ def exec_proc(q,putq,samps):
         raise
         
 class EEG_Processer:
+    """Completes the processing in order to retrieve the data sequentially and output results with the fft"""
     def __init__(self):
         self.sensors= ['F3', 'O2', 'O1', 'F8', 'F4', 'FC6', 'AF3', 'P7', 'P8', 'FC5', 'T8', 'AF4', 'F7', 'T7']
     def mainloop_example(self, q, q2, st):
